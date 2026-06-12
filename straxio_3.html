@@ -6,36 +6,36 @@
 <title>Straxio — Wallet Monitor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:          #f4faf6;
-  --bg2:         #ffffff;
-  --bg3:         #eef7f1;
-  --bg4:         #e0f0e6;
-  --border:      rgba(22,163,74,0.12);
-  --border2:     rgba(22,163,74,0.25);
-  --text:        #0d1f14;
-  --text2:       #3d6b4f;
-  --text3:       #7aaa8a;
-  --accent:      #16a34a;
-  --accent2:     #22c55e;
-  --accent3:     #4ade80;
-  --green:       #16a34a;
-  --green-bg:    rgba(22,163,74,0.1);
-  --red:         #dc2626;
-  --red-bg:      rgba(220,38,38,0.08);
-  --yellow:      #d97706;
-  --yellow-bg:   rgba(217,119,6,0.1);
-  --eth-color:   #4f6ef7;
-  --tron-color:  #ef0027;
-  --usdt-color:  #16a34a;
-  --mono:        'DM Mono', 'SF Mono', monospace;
-  --sans:        'DM Sans', system-ui, sans-serif;
-  --r-sm:        8px;
-  --r-md:        12px;
-  --r-lg:        16px;
-  --r-xl:        20px;
+  --bg:         #f2f2f3;
+  --bg2:        #ffffff;
+  --bg3:        #f7f7f8;
+  --bg4:        #ebebec;
+  --border:     rgba(0,0,0,0.07);
+  --border2:    rgba(0,0,0,0.13);
+  --text:       #0c0c0e;
+  --text2:      #6b7280;
+  --text3:      #9ca3af;
+  --dark:       #111111;
+  --dark2:      #1c1c1e;
+  --dark-text:  #f5f5f5;
+  --dark-sub:   #8a8a8a;
+  --accent:     #111111;
+  --green:      #16a34a;
+  --green-bg:   rgba(22,163,74,0.10);
+  --red:        #dc2626;
+  --red-bg:     rgba(220,38,38,0.08);
+  --yellow:     #d97706;
+  --yellow-bg:  rgba(217,119,6,0.10);
+  --eth-color:  #627eea;
+  --tron-color: #ef0027;
+  --mono:       'DM Mono', 'SF Mono', monospace;
+  --sans:       'Inter', system-ui, sans-serif;
+  --r:          16px;
+  --r-sm:       8px;
+  --r-md:       12px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body {
@@ -47,88 +47,72 @@ html, body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
 }
+.app { display: flex; min-height: 100vh; }
 
-/* ─── ambient background ─── */
-body::before {
-  content: '';
-  position: fixed; inset: 0; z-index: 0;
-  background:
-    radial-gradient(ellipse 80% 40% at 20% -10%, rgba(22,163,74,0.10) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 30% at 80% 110%, rgba(34,197,94,0.07) 0%, transparent 60%);
-  pointer-events: none;
-}
-.app { position: relative; z-index: 1; display: flex; min-height: 100vh; }
-
-/* ─── sidebar ─── */
+/* ─── SIDEBAR ─── */
 .sidebar {
   width: 220px; flex-shrink: 0;
-  background: #ffffff;
+  background: var(--bg2);
   border-right: 1px solid var(--border);
   display: flex; flex-direction: column;
-  padding: 24px 0;
   position: fixed; top: 0; left: 0; bottom: 0;
-  box-shadow: 2px 0 12px rgba(22,163,74,0.06);
+  z-index: 20;
 }
 .sidebar-logo {
-  padding: 0 20px 28px;
+  padding: 22px 20px 18px;
   display: flex; align-items: center; gap: 10px;
+  border-bottom: 1px solid var(--border);
 }
 .logo-icon {
   width: 32px; height: 32px; border-radius: 8px;
-  background: linear-gradient(135deg, #16a34a, #22c55e);
+  background: var(--dark);
   display: flex; align-items: center; justify-content: center;
-  font-size: 16px;
-  box-shadow: 0 2px 8px rgba(22,163,74,0.3);
+  font-size: 15px; font-weight: 800; color: white; letter-spacing: -0.05em;
+  flex-shrink: 0;
 }
-.logo-text { font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: -0.02em; }
-.logo-text span { color: var(--accent2); }
+.logo-text { font-size: 16px; font-weight: 800; color: var(--text); letter-spacing: -0.04em; }
+.logo-text span { color: var(--text3); font-weight: 400; }
 
-.nav { display: flex; flex-direction: column; gap: 2px; padding: 0 12px; flex: 1; }
+.nav { display: flex; flex-direction: column; gap: 2px; padding: 14px 10px; flex: 1; }
 .nav-btn {
   display: flex; align-items: center; gap: 10px;
-  padding: 10px 12px;
-  border-radius: var(--r-md);
+  padding: 9px 12px; border-radius: var(--r-sm);
   border: none; background: none;
   color: var(--text2); cursor: pointer;
-  font-family: var(--sans); font-size: 14px; font-weight: 500;
-  transition: all 0.15s;
-  text-align: left; width: 100%;
+  font-family: var(--sans); font-size: 13.5px; font-weight: 500;
+  transition: all 0.15s; text-align: left; width: 100%;
 }
 .nav-btn:hover { background: var(--bg3); color: var(--text); }
-.nav-btn.active { background: rgba(22,163,74,0.12); color: var(--accent); }
-.nav-icon { font-size: 16px; width: 20px; text-align: center; }
+.nav-btn.active { background: var(--dark); color: white; }
+.nav-icon { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
 
-.sidebar-bottom { padding: 12px 12px 0; border-top: 1px solid var(--border); }
-.network-pills { display: flex; flex-direction: column; gap: 6px; padding: 12px 0; }
+.sidebar-bottom {
+  padding: 14px 16px;
+  border-top: 1px solid var(--border);
+}
+.net-pills { display: flex; flex-direction: column; gap: 8px; }
 .net-pill {
   display: flex; align-items: center; gap: 8px;
-  padding: 6px 12px; border-radius: 6px;
   font-size: 12px; color: var(--text3);
 }
-.net-dot { width: 6px; height: 6px; border-radius: 50%; }
+.net-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 
-/* ─── main content ─── */
-.main {
-  margin-left: 220px;
-  flex: 1;
-  display: flex; flex-direction: column;
-}
+/* ─── MAIN ─── */
+.main { margin-left: 220px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
 
-/* ─── topbar ─── */
+/* ─── TOPBAR ─── */
 .topbar {
-  height: 64px;
+  height: 60px;
   border-bottom: 1px solid var(--border);
   display: flex; align-items: center;
-  padding: 0 32px;
-  gap: 16px;
-  background: rgba(255,255,255,0.92);
-  backdrop-filter: blur(12px);
+  padding: 0 28px; gap: 12px;
+  background: var(--bg2);
   position: sticky; top: 0; z-index: 10;
 }
-.topbar-title { font-size: 16px; font-weight: 600; flex: 1; }
+.topbar-title { font-size: 14px; font-weight: 600; flex: 1; letter-spacing: -0.01em; color: var(--text2); }
 .topbar-meta { font-size: 12px; color: var(--text3); font-family: var(--mono); }
 .topbar-meta.stale { color: var(--yellow); }
-.auto-refresh-wrap { display: flex; align-items: center; gap: 6px; }
+
 .auto-refresh-wrap select {
   padding: 6px 8px; border-radius: 6px; font-size: 12px;
   background: var(--bg3); border: 1px solid var(--border2);
@@ -137,149 +121,173 @@ body::before {
 
 .btn-refresh {
   display: flex; align-items: center; gap: 6px;
-  padding: 8px 16px; border-radius: 8px;
-  background: var(--accent); border: none;
+  padding: 8px 18px; border-radius: var(--r-sm);
+  background: var(--dark); border: none;
   color: white; cursor: pointer;
   font-family: var(--sans); font-size: 13px; font-weight: 600;
-  transition: all 0.15s;
-  box-shadow: 0 1px 6px rgba(22,163,74,0.3);
+  transition: opacity 0.15s;
 }
-.btn-refresh:hover { background: #15803d; }
+.btn-refresh:hover { opacity: 0.82; }
 .btn-refresh.spinning .refresh-icon { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .refresh-icon { display: inline-block; }
 
-/* ─── page content ─── */
-.page { display: none; flex: 1; padding: 32px; }
+/* ─── PAGE ─── */
+.page { display: none; flex: 1; padding: 28px 28px 40px; }
 .page.active { display: block; }
 
-/* ─── hero total ─── */
-.hero {
-  margin-bottom: 32px;
+/* ─── PAGE HEADER ─── */
+.page-header { margin-bottom: 24px; }
+.page-header h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.04em; color: var(--text); line-height: 1; }
+.page-header p  { font-size: 13px; color: var(--text3); margin-top: 5px; }
+
+/* ─── STAT GRID ─── */
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 2fr;
+  gap: 10px;
+  margin-bottom: 20px;
 }
-.hero-label {
-  font-size: 13px; color: var(--text3); font-weight: 500;
-  text-transform: uppercase; letter-spacing: 0.08em;
-  margin-bottom: 8px;
+
+/* small stat card */
+.stat-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 18px 20px 20px;
 }
-.hero-value {
-  font-size: 48px; font-weight: 300; letter-spacing: -0.04em;
-  color: var(--text); line-height: 1;
+.stat-card-header {
+  display: flex; align-items: center; justify-content: space-between;
   margin-bottom: 16px;
 }
-.hero-value .currency { font-size: 28px; color: var(--text2); margin-right: 4px; }
-.hero-value .cents { font-size: 28px; color: var(--text2); }
-
-.network-summary {
-  display: flex; gap: 12px; flex-wrap: wrap;
+.stat-card-label { font-size: 12px; color: var(--text2); font-weight: 500; }
+.stat-card-icon {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--bg3); border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; color: var(--text2);
 }
-.net-card {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 16px; border-radius: var(--r-md);
+.stat-card-icon.eth  { background: rgba(98,126,234,0.12); border-color: rgba(98,126,234,0.2); color: var(--eth-color); }
+.stat-card-icon.tron { background: rgba(239,0,39,0.10);   border-color: rgba(239,0,39,0.2);   color: var(--tron-color); }
+.stat-card-value { font-size: 22px; font-weight: 700; letter-spacing: -0.04em; color: var(--text); line-height: 1; }
+
+/* dark hero card */
+.hero-card {
+  background: var(--dark);
+  border-radius: var(--r);
+  padding: 20px 22px 22px;
+  color: var(--dark-text);
+  display: flex; flex-direction: column;
+  position: relative; overflow: hidden;
+}
+.hero-card::after {
+  content: '';
+  position: absolute; bottom: -60px; right: -60px;
+  width: 200px; height: 200px; border-radius: 50%;
+  background: rgba(255,255,255,0.03);
+  pointer-events: none;
+}
+.hero-card-label { font-size: 12px; color: var(--dark-sub); font-weight: 500; margin-bottom: 10px; }
+.hero-card-value {
+  font-size: 30px; font-weight: 800; letter-spacing: -0.05em; line-height: 1;
+  margin-bottom: 18px;
+}
+.hero-card-value .cents { font-size: 18px; color: rgba(255,255,255,0.35); font-weight: 600; }
+.hero-card-split {
+  display: flex; gap: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  margin-top: auto;
+}
+.hero-split-item { flex: 1; min-width: 0; }
+.hero-split-label { font-size: 10px; color: var(--dark-sub); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 4px; }
+.hero-split-val   { font-size: 13px; font-weight: 600; color: var(--dark-text); margin-bottom: 6px; letter-spacing: -0.02em; }
+.hero-split-bar-bg { height: 3px; border-radius: 2px; background: rgba(255,255,255,0.08); }
+.hero-split-bar    { height: 3px; border-radius: 2px; transition: width 0.5s ease; }
+
+/* ─── VIEW TABS ─── */
+.view-tabs {
+  display: flex; gap: 0;
   background: var(--bg2); border: 1px solid var(--border);
-  min-width: 160px;
+  border-radius: var(--r-sm); padding: 3px;
+  width: fit-content; margin-bottom: 16px;
 }
-.net-card-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.net-card-info {}
-.net-card-name { font-size: 11px; color: var(--text3); font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; }
-.net-card-val { font-size: 15px; font-weight: 600; color: var(--text); margin-top: 1px; }
-
-/* ─── section header ─── */
-.section-header {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 12px;
+.view-tab {
+  padding: 7px 18px; border-radius: 6px; border: none;
+  background: none; color: var(--text2); cursor: pointer;
+  font-family: var(--sans); font-size: 13px; font-weight: 500;
+  transition: all 0.15s;
 }
-.section-title {
-  font-size: 13px; color: var(--text3); font-weight: 500;
-  text-transform: uppercase; letter-spacing: 0.08em;
-}
+.view-tab.active { background: var(--dark); color: white; font-weight: 600; }
 
-/* ─── wallet cards ─── */
-.wallets-list { display: flex; flex-direction: column; gap: 8px; }
-
+/* ─── WALLET CARDS ─── */
+.wallets-list { display: flex; flex-direction: column; gap: 6px; }
 .wallet-card {
   background: var(--bg2);
   border: 1px solid var(--border);
-  border-radius: var(--r-lg);
+  border-radius: var(--r-md);
   overflow: hidden;
   transition: border-color 0.15s;
 }
 .wallet-card:hover { border-color: var(--border2); }
-
 .wallet-card-header {
   display: flex; align-items: center; gap: 14px;
-  padding: 16px 20px;
-  cursor: pointer;
+  padding: 14px 18px; cursor: pointer;
 }
 .wallet-avatar {
-  width: 40px; height: 40px; border-radius: 12px;
+  width: 40px; height: 40px; border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 18px; flex-shrink: 0;
-  position: relative;
+  font-size: 18px; flex-shrink: 0; position: relative;
 }
 .wallet-avatar .net-badge {
   position: absolute; bottom: -2px; right: -2px;
-  width: 16px; height: 16px; border-radius: 50%;
+  width: 15px; height: 15px; border-radius: 50%;
   border: 2px solid var(--bg2);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 8px;
+  display: flex; align-items: center; justify-content: center; font-size: 7px;
 }
 .wallet-info { flex: 1; min-width: 0; }
-.wallet-label { font-size: 15px; font-weight: 600; color: var(--text); }
-.wallet-addr {
-  font-size: 12px; color: var(--text3); font-family: var(--mono);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.wallet-usd {
-  font-size: 18px; font-weight: 600; color: var(--text);
-  text-align: right;
-}
-.wallet-usd-sub { font-size: 12px; color: var(--text3); text-align: right; margin-top: 2px; }
+.wallet-label { font-size: 14px; font-weight: 600; color: var(--text); letter-spacing: -0.01em; }
+.wallet-addr  { font-size: 11px; color: var(--text3); font-family: var(--mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wallet-usd     { font-size: 16px; font-weight: 700; color: var(--text); text-align: right; letter-spacing: -0.03em; }
+.wallet-usd-sub { font-size: 11px; color: var(--text3); text-align: right; margin-top: 2px; }
 
-.wallet-tokens {
-  display: none;
-  padding: 0 20px 16px;
-  border-top: 1px solid var(--border);
-}
+.wallet-tokens { display: none; padding: 0 18px 14px; border-top: 1px solid var(--border); }
 .wallet-card.expanded .wallet-tokens { display: block; }
-.wallet-card.expanded .wallet-card-header { padding-bottom: 14px; }
+.wallet-card.expanded .wallet-card-header { padding-bottom: 12px; }
 
-.token-list { display: flex; flex-direction: column; gap: 2px; margin-top: 12px; }
+.token-list { display: flex; flex-direction: column; gap: 2px; margin-top: 10px; }
 .token-row {
   display: flex; align-items: center; gap: 12px;
-  padding: 8px 12px; border-radius: 8px;
-  transition: background 0.1s;
+  padding: 7px 10px; border-radius: var(--r-sm); transition: background 0.1s;
 }
 .token-row:hover { background: var(--bg3); }
 .token-icon {
-  width: 32px; height: 32px; border-radius: 50%;
+  width: 30px; height: 30px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 14px; font-weight: 700; flex-shrink: 0;
-  font-family: var(--mono);
+  font-size: 12px; font-weight: 700; flex-shrink: 0; font-family: var(--mono);
 }
 .token-name { flex: 1; }
-.token-symbol { font-size: 14px; font-weight: 600; color: var(--text); }
+.token-symbol  { font-size: 13px; font-weight: 600; color: var(--text); }
 .token-network { font-size: 11px; color: var(--text3); }
-.token-amount { text-align: right; }
-.token-bal { font-size: 14px; font-weight: 500; color: var(--text); font-family: var(--mono); }
-.token-usd { font-size: 12px; color: var(--text3); }
+.token-amount  { text-align: right; }
+.token-bal { font-size: 13px; font-weight: 500; color: var(--text); font-family: var(--mono); }
+.token-usd { font-size: 11px; color: var(--text3); }
 
-/* token colors */
-.tok-eth  { background: rgba(98,126,234,0.15); color: var(--eth-color); }
-.tok-trx  { background: rgba(239,0,39,0.12);   color: #ff4d6a; }
-.tok-usdt { background: rgba(38,161,123,0.15); color: var(--usdt-color); }
-.tok-usdc { background: rgba(39,117,202,0.15); color: #5b9cf6; }
+.tok-eth  { background: rgba(98,126,234,0.12); color: var(--eth-color); }
+.tok-trx  { background: rgba(239,0,39,0.10);   color: #ff4d6a; }
+.tok-usdt { background: rgba(22,163,74,0.12);  color: var(--green); }
+.tok-usdc { background: rgba(39,117,202,0.12); color: #5b9cf6; }
 
-/* ─── empty state ─── */
+/* ─── EMPTY STATE ─── */
 .empty-state {
   display: flex; flex-direction: column; align-items: center;
-  padding: 80px 32px; text-align: center; gap: 12px;
+  padding: 64px 32px; text-align: center; gap: 10px;
 }
-.empty-icon { font-size: 48px; opacity: 0.3; }
-.empty-title { font-size: 18px; font-weight: 600; color: var(--text2); }
-.empty-sub { font-size: 14px; color: var(--text3); max-width: 300px; }
+.empty-icon  { font-size: 36px; opacity: 0.2; }
+.empty-title { font-size: 16px; font-weight: 600; color: var(--text2); }
+.empty-sub   { font-size: 13px; color: var(--text3); max-width: 280px; }
 
-/* ─── loading ─── */
+/* ─── SKELETON ─── */
 .skeleton {
   background: linear-gradient(90deg, var(--bg3) 25%, var(--bg4) 50%, var(--bg3) 75%);
   background-size: 200% 100%;
@@ -288,105 +296,80 @@ body::before {
 }
 @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-/* progress bar */
-.detail-pct-bar { height: 4px; border-radius: 2px; background: var(--accent); transition: width 0.4s ease; }
-
-/* ─── log ─── */
+/* ─── LOG ─── */
 .log-panel {
-  margin-top: 24px;
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  overflow: hidden;
+  margin-top: 18px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--r-md); overflow: hidden;
 }
 .log-header {
-  padding: 10px 16px;
-  font-size: 11px; color: var(--text3); font-weight: 500;
+  padding: 9px 14px; font-size: 11px; color: var(--text3); font-weight: 600;
   text-transform: uppercase; letter-spacing: 0.08em;
   border-bottom: 1px solid var(--border);
   display: flex; align-items: center; justify-content: space-between;
 }
-.log-body {
-  max-height: 160px; overflow-y: auto;
-  padding: 8px 0;
-}
-.log-entry {
-  display: flex; align-items: baseline; gap: 10px;
-  padding: 4px 16px; font-size: 12px; font-family: var(--mono);
-}
+.log-body { max-height: 150px; overflow-y: auto; padding: 6px 0; }
+.log-entry { display: flex; align-items: baseline; gap: 10px; padding: 3px 14px; font-size: 12px; font-family: var(--mono); }
 .log-time { color: var(--text3); flex-shrink: 0; }
-.log-msg { color: var(--text2); }
-.log-entry.ok .log-msg  { color: var(--green); }
-.log-entry.err .log-msg { color: var(--red); }
-.log-entry.warn .log-msg{ color: var(--yellow); }
+.log-msg  { color: var(--text2); }
+.log-entry.ok   .log-msg { color: var(--green); }
+.log-entry.err  .log-msg { color: var(--red); }
+.log-entry.warn .log-msg { color: var(--yellow); }
 
-/* ─── SETTINGS PAGE ─── */
-.settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 900px; }
+/* ─── SETTINGS ─── */
+.settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 860px; }
 @media (max-width: 768px) { .settings-grid { grid-template-columns: 1fr; } }
-
 .card {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  padding: 20px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 22px;
 }
-.card-title {
-  font-size: 13px; font-weight: 600; color: var(--text);
-  margin-bottom: 16px; letter-spacing: -0.01em;
-}
-.card-sub { font-size: 12px; color: var(--text3); margin-bottom: 16px; margin-top: -10px; }
-
+.card-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 18px; letter-spacing: -0.02em; }
 .field { margin-bottom: 14px; }
 .field:last-child { margin-bottom: 0; }
-.field label {
-  display: block; font-size: 12px; color: var(--text3);
-  font-weight: 500; margin-bottom: 6px;
-}
+.field label { display: block; font-size: 12px; color: var(--text2); font-weight: 500; margin-bottom: 6px; }
 .field input, .field select {
   width: 100%; padding: 9px 12px;
   background: var(--bg3); border: 1px solid var(--border2);
   border-radius: var(--r-sm); color: var(--text);
-  font-family: var(--mono); font-size: 13px;
-  outline: none; transition: border-color 0.15s;
+  font-family: var(--mono); font-size: 13px; outline: none; transition: border-color 0.15s;
 }
-.field input:focus, .field select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(22,163,74,0.1); }
+.field input:focus, .field select:focus { border-color: var(--dark); box-shadow: 0 0 0 3px rgba(0,0,0,0.06); }
 .field input::placeholder { color: var(--text3); }
 .field .hint { font-size: 11px; color: var(--text3); margin-top: 5px; }
-.field .hint a { color: var(--accent2); text-decoration: none; }
+.field .hint a { color: var(--text); text-underline-offset: 2px; }
 
 .btn {
-  padding: 9px 16px; border-radius: 8px;
-  background: var(--accent); border: none;
+  padding: 9px 18px; border-radius: var(--r-sm);
+  background: var(--dark); border: none;
   color: white; cursor: pointer;
   font-family: var(--sans); font-size: 13px; font-weight: 600;
-  transition: all 0.15s;
+  transition: opacity 0.15s;
 }
-.btn:hover { background: #15803d; }
+.btn:hover { opacity: 0.82; }
 .btn-ghost {
   background: var(--bg3); color: var(--text2);
   border: 1px solid var(--border2);
 }
-.btn-ghost:hover { background: var(--bg4); color: var(--text); }
-.btn-danger { background: rgba(220,38,38,0.08); color: var(--red); border: 1px solid rgba(220,38,38,0.2); }
-.btn-danger:hover { background: rgba(220,38,38,0.15); }
-.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-ghost:hover { background: var(--bg4); color: var(--text); opacity: 1; }
+.btn-danger { background: var(--red-bg); color: var(--red); border: 1px solid rgba(220,38,38,0.2); }
+.btn-danger:hover { background: rgba(220,38,38,0.14); opacity: 1; }
+.btn-sm { padding: 7px 14px; font-size: 12px; }
 .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
 
-/* wallet list in settings */
 .wallet-list-settings { display: flex; flex-direction: column; gap: 6px; }
 .wallet-item-settings {
   display: flex; align-items: center; gap: 10px;
-  padding: 10px 12px; border-radius: 8px;
+  padding: 10px 14px; border-radius: var(--r-sm);
   background: var(--bg3); border: 1px solid var(--border);
 }
 .wallet-item-settings .net-tag {
   font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
   padding: 2px 7px; border-radius: 4px;
 }
-.net-tag.eth { background: rgba(98,126,234,0.2); color: var(--eth-color); }
-.net-tag.tron { background: rgba(239,0,39,0.15); color: #ff4d6a; }
+.net-tag.eth  { background: rgba(98,126,234,0.15); color: var(--eth-color); }
+.net-tag.tron { background: rgba(239,0,39,0.12);   color: #ff4d6a; }
 .wallet-item-settings .wlabel { font-size: 13px; font-weight: 500; flex: 1; }
-.wallet-item-settings .waddr { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+.wallet-item-settings .waddr  { font-size: 11px; color: var(--text3); font-family: var(--mono); }
 .del-btn {
   background: none; border: none; cursor: pointer;
   color: var(--text3); font-size: 16px; padding: 4px;
@@ -394,95 +377,39 @@ body::before {
 }
 .del-btn:hover { color: var(--red); }
 
-/* ─── STATEMENTS PAGE ─── */
-.statements-layout { display: grid; grid-template-columns: 300px 1fr; gap: 16px; max-width: 900px; }
-@media (max-width: 768px) { .statements-layout { grid-template-columns: 1fr; } }
-
-.preset-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
-.chip {
-  padding: 5px 12px; border-radius: 20px;
-  background: var(--bg3); border: 1px solid var(--border2);
-  color: var(--text2); cursor: pointer; font-size: 12px; font-weight: 500;
-  transition: all 0.15s;
-}
-.chip:hover { background: var(--bg4); color: var(--text); }
-
-.export-summary {
-  background: var(--bg3); border-radius: 8px;
-  padding: 12px 14px; margin-top: 14px;
-  font-size: 12px; color: var(--text3);
-}
-.export-summary strong { color: var(--text); }
-
-/* ─── toast ─── */
-.toast-container {
-  position: fixed; bottom: 24px; right: 24px; z-index: 999;
-  display: flex; flex-direction: column; gap: 8px; align-items: flex-end;
-}
-.toast {
-  padding: 10px 16px; border-radius: 10px;
-  font-size: 13px; font-weight: 500;
-  animation: toast-in 0.2s ease, toast-out 0.2s ease 2.8s forwards;
-  max-width: 320px;
-}
-@keyframes toast-in  { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-@keyframes toast-out { from { opacity: 1; } to { opacity: 0; } }
-.toast.ok   { background: var(--green-bg);  color: var(--green);  border: 1px solid rgba(52,211,153,0.3); }
-.toast.err  { background: var(--red-bg);    color: var(--red);    border: 1px solid rgba(248,113,113,0.3); }
-.toast.info { background: var(--bg3);       color: var(--text);   border: 1px solid var(--border2); }
-
-/* ─── Assets by token (portfolio view) ─── */
-.view-tabs {
-  display: flex; gap: 4px;
-  background: var(--bg3); border-radius: 10px; padding: 4px;
-  width: fit-content; margin-bottom: 20px;
-}
-.view-tab {
-  padding: 6px 16px; border-radius: 7px; border: none;
-  background: none; color: var(--text2); cursor: pointer;
-  font-family: var(--sans); font-size: 13px; font-weight: 500;
-  transition: all 0.15s;
-}
-.view-tab.active { background: var(--bg2); color: var(--accent); box-shadow: 0 1px 3px rgba(22,163,74,0.15); font-weight: 600; }
-
-/* token summary rows (By Token view) */
-.asset-rows { display: flex; flex-direction: column; gap: 2px; }
+/* ─── BY TOKEN ─── */
+.asset-rows { display: flex; flex-direction: column; gap: 4px; }
 .asset-row {
   display: flex; align-items: center; gap: 14px;
-  padding: 12px 16px; border-radius: var(--r-md);
+  padding: 14px 18px; border-radius: var(--r-md);
   background: var(--bg2); border: 1px solid var(--border);
-  cursor: pointer; transition: all 0.15s;
+  cursor: pointer; transition: border-color 0.15s;
 }
-.asset-row:hover { border-color: var(--border2); background: var(--bg3); }
-.asset-row-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; flex-shrink: 0; }
-.asset-row-info { flex: 1; }
-.asset-row-name { font-size: 15px; font-weight: 600; color: var(--text); }
-.asset-row-sub { font-size: 12px; color: var(--text3); margin-top: 1px; }
+.asset-row:hover { border-color: var(--border2); }
+.asset-row-icon  { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; flex-shrink: 0; }
+.asset-row-info  { flex: 1; }
+.asset-row-name  { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
+.asset-row-sub   { font-size: 12px; color: var(--text3); margin-top: 1px; }
 .asset-row-right { text-align: right; }
-.asset-row-usd { font-size: 16px; font-weight: 600; color: var(--text); }
-.asset-row-bal { font-size: 12px; color: var(--text3); font-family: var(--mono); }
+.asset-row-usd   { font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -0.03em; }
+.asset-row-bal   { font-size: 12px; color: var(--text3); font-family: var(--mono); }
 .asset-row-chevron { color: var(--text3); font-size: 14px; margin-left: 4px; }
 
-/* ─── Token detail page ─── */
-.token-detail { display: none; }
-.token-detail.active { display: block; }
-
+/* ─── TOKEN DETAIL ─── */
 .detail-back {
   display: flex; align-items: center; gap: 8px;
   background: none; border: none; color: var(--text2);
   font-family: var(--sans); font-size: 14px; cursor: pointer;
-  padding: 0; margin-bottom: 24px; transition: color 0.15s;
+  padding: 0; margin-bottom: 22px; transition: color 0.15s;
 }
 .detail-back:hover { color: var(--text); }
-
-.detail-hero {
-  display: flex; align-items: center; gap: 16px; margin-bottom: 28px;
-}
-.detail-icon { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 700; }
-.detail-title { font-size: 28px; font-weight: 300; letter-spacing: -0.03em; }
-.detail-title span { color: var(--text2); }
-.detail-sub { font-size: 14px; color: var(--text3); margin-top: 4px; }
-
+.detail-hero { display: flex; align-items: center; gap: 16px; margin-bottom: 26px; }
+.detail-icon  { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; }
+.detail-title { font-size: 26px; font-weight: 800; letter-spacing: -0.04em; color: var(--text); }
+.detail-title span { color: var(--text2); font-weight: 400; }
+.detail-sub   { font-size: 13px; color: var(--text3); margin-top: 4px; }
+.section-title  { font-size: 11px; color: var(--text3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; }
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 .detail-by-wallet { display: flex; flex-direction: column; gap: 6px; }
 .detail-wallet-row {
   display: flex; align-items: center; gap: 14px;
@@ -490,51 +417,40 @@ body::before {
   background: var(--bg2); border: 1px solid var(--border);
 }
 .detail-wallet-avatar { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
-.detail-wallet-info { flex: 1; min-width: 0; }
-.detail-wallet-label { font-size: 14px; font-weight: 600; color: var(--text); }
-.detail-wallet-addr { font-size: 11px; color: var(--text3); font-family: var(--mono); }
-.detail-wallet-pct { width: 120px; }
-.detail-pct-bar-bg { height: 4px; background: var(--bg4); border-radius: 2px; margin-top: 5px; }
+.detail-wallet-info   { flex: 1; min-width: 0; }
+.detail-wallet-label  { font-size: 14px; font-weight: 600; color: var(--text); }
+.detail-wallet-addr   { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+.detail-wallet-pct    { width: 110px; }
+.detail-pct-bar-bg    { height: 3px; background: var(--bg4); border-radius: 2px; margin-top: 5px; }
+.detail-pct-bar       { height: 3px; border-radius: 2px; background: var(--dark); transition: width 0.4s ease; }
 .detail-wallet-amount { text-align: right; }
-.detail-wallet-bal { font-size: 14px; font-weight: 600; color: var(--text); font-family: var(--mono); }
-.detail-wallet-usd { font-size: 12px; color: var(--text3); }
+.detail-wallet-bal    { font-size: 14px; font-weight: 600; color: var(--text); font-family: var(--mono); }
+.detail-wallet-usd    { font-size: 12px; color: var(--text3); }
 
 /* ─── HISTORY ─── */
 .history-filters {
   display: flex; align-items: center; justify-content: space-between;
-  gap: 12px; flex-wrap: nowrap;
-  padding: 12px 18px; border-radius: var(--r-lg);
+  gap: 12px; padding: 12px 16px; border-radius: var(--r-md);
   background: var(--bg2); border: 1px solid var(--border);
-  margin-bottom: 16px;
-  overflow-x: auto;
+  margin-bottom: 14px; overflow-x: auto;
 }
 .history-filter-row { display: flex; align-items: center; flex-wrap: nowrap; gap: 12px; flex: 1; min-width: 0; }
 .filter-group { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 .filter-label { font-size: 11px; color: var(--text3); font-weight: 600; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.05em; }
 .filter-chips { display: flex; gap: 4px; flex-wrap: nowrap; }
-.filter-group-sep { width: 1px; height: 20px; background: var(--border2); flex-shrink: 0; }
+.filter-group-sep { width: 1px; height: 18px; background: var(--border2); flex-shrink: 0; }
 .filter-chip {
   padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border2);
   background: var(--bg3); color: var(--text2); cursor: pointer;
-  font-family: var(--sans); font-size: 12px; font-weight: 500;
-  transition: all 0.15s;
+  font-family: var(--sans); font-size: 12px; font-weight: 500; transition: all 0.15s;
 }
 .filter-chip:hover { background: var(--bg4); color: var(--text); }
-.filter-chip.active {
-  background: var(--accent); color: white; border-color: var(--accent);
-  box-shadow: 0 1px 4px rgba(22,163,74,0.3);
-}
+.filter-chip.active { background: var(--dark); color: white; border-color: var(--dark); }
 
-.history-stats {
-  display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px;
-}
-.hstat {
-  flex: 1; min-width: 100px;
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: var(--r-md); padding: 14px 18px;
-}
+.history-stats { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.hstat { flex: 1; min-width: 100px; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 14px 18px; }
 .hstat-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500; }
-.hstat-val { font-size: 20px; font-weight: 600; color: var(--text); margin-top: 4px; font-family: var(--mono); }
+.hstat-val   { font-size: 20px; font-weight: 700; color: var(--text); margin-top: 4px; font-family: var(--mono); letter-spacing: -0.03em; }
 .hstat-green { color: var(--green); }
 .hstat-red   { color: var(--red); }
 
@@ -546,65 +462,59 @@ body::before {
   transition: border-color 0.12s;
 }
 .tx-row:hover { border-color: var(--border2); }
-.tx-icon {
-  width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center; font-size: 15px;
-}
+.tx-icon { width: 34px; height: 34px; border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; }
 .tx-icon.send    { background: rgba(220,38,38,0.08); }
 .tx-icon.receive { background: rgba(22,163,74,0.10); }
 .tx-info { flex: 1; min-width: 0; }
-.tx-type { font-size: 14px; font-weight: 600; color: var(--text); }
-.tx-meta { font-size: 11px; color: var(--text3); font-family: var(--mono); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tx-type   { font-size: 14px; font-weight: 600; color: var(--text); }
+.tx-meta   { font-size: 11px; color: var(--text3); font-family: var(--mono); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tx-wallet { font-size: 11px; color: var(--text2); font-weight: 500; }
 .tx-amount { text-align: right; flex-shrink: 0; }
-.tx-amount-val { font-size: 15px; font-weight: 600; font-family: var(--mono); }
+.tx-amount-val { font-size: 14px; font-weight: 600; font-family: var(--mono); }
 .tx-amount-val.out { color: var(--red); }
 .tx-amount-val.in  { color: var(--green); }
-.tx-usd { font-size: 11px; color: var(--text3); }
+.tx-usd  { font-size: 11px; color: var(--text3); }
 .tx-hash { font-size: 10px; color: var(--text3); font-family: var(--mono); text-decoration: none; }
-.tx-hash:hover { color: var(--accent); }
+.tx-hash:hover { color: var(--text); }
 
-/* ─── Spam toggle (Zerion-style) ─── */
-.spam-toggle {
-  display: flex; align-items: center; gap: 7px;
-  cursor: pointer; user-select: none;
-}
+.spam-toggle { display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none; }
 .spam-toggle input { display: none; }
 .spam-toggle-track {
-  width: 36px; height: 20px; border-radius: 10px;
-  background: var(--bg4); border: 1px solid var(--border2);
-  position: relative; transition: background 0.2s, border-color 0.2s;
-  flex-shrink: 0;
+  width: 34px; height: 18px; border-radius: 9px;
+  background: #d1d5db; border: 1px solid rgba(0,0,0,0.08);
+  position: relative; transition: background 0.2s; flex-shrink: 0;
 }
-/* track styling handled via .on class (see JS) */
+.spam-toggle-track.on { background: var(--dark); border-color: var(--dark); }
 .spam-toggle-thumb {
   position: absolute; top: 2px; left: 2px;
-  width: 14px; height: 14px; border-radius: 50%;
-  background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-  transition: transform 0.2s;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: transform 0.2s;
 }
-/* JS updates .spam-toggle-track.on and .spam-toggle-thumb via updateSpamToggle() */
-.spam-toggle-track.on { background: var(--accent); border-color: var(--accent); }
 .spam-toggle-track.on .spam-toggle-thumb { transform: translateX(16px); }
-.spam-toggle-label {
-  font-size: 12px; font-weight: 500; color: var(--text2);
-  white-space: nowrap;
-}
-.spam-badge {
-  font-size: 10px; padding: 1px 5px; border-radius: 4px;
-  background: var(--yellow-bg); color: var(--yellow);
-  font-weight: 600; margin-left: 2px;
-}
-
+.spam-toggle-label { font-size: 12px; font-weight: 500; color: var(--text2); white-space: nowrap; }
+.spam-badge { font-size: 10px; padding: 1px 5px; border-radius: 4px; background: var(--yellow-bg); color: var(--yellow); font-weight: 600; margin-left: 2px; }
 .tx-fake-badge {
   display: inline-flex; align-items: center; gap: 3px;
   font-size: 10px; font-weight: 700; padding: 1px 6px;
   border-radius: 4px; background: rgba(220,38,38,0.10);
-  color: var(--red); border: 1px solid rgba(220,38,38,0.25);
-  margin-left: 6px; vertical-align: middle;
+  color: var(--red); border: 1px solid rgba(220,38,38,0.25); margin-left: 6px; vertical-align: middle;
 }
 
-/* ─── scrollbar ─── */
+/* ─── TOAST ─── */
+.toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 999; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+.toast {
+  padding: 10px 16px; border-radius: 10px;
+  font-size: 13px; font-weight: 500;
+  animation: toast-in 0.2s ease, toast-out 0.2s ease 2.8s forwards;
+  max-width: 320px; box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+}
+@keyframes toast-in  { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes toast-out { from { opacity: 1; } to { opacity: 0; } }
+.toast.ok   { background: var(--green-bg); color: var(--green); border: 1px solid rgba(52,211,153,0.3); }
+.toast.err  { background: var(--red-bg);   color: var(--red);   border: 1px solid rgba(248,113,113,0.3); }
+.toast.info { background: var(--bg2);      color: var(--text);  border: 1px solid var(--border2); }
+
+/* ─── SCROLLBAR ─── */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 2px; }
@@ -616,10 +526,9 @@ body::before {
   <!-- ─── SIDEBAR ─── -->
   <aside class="sidebar">
     <div class="sidebar-logo">
-      <div class="logo-icon" style="background:linear-gradient(135deg,#16a34a,#22c55e);width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(22,163,74,0.3);font-size:15px;font-weight:800;color:white;letter-spacing:-0.05em">S</div>
-      <div class="logo-text" style="color:#0d1f14;font-size:17px;font-weight:800;letter-spacing:-0.04em">Strax<span style="color:var(--accent)">io</span></div>
+      <div class="logo-icon">S</div>
+      <div class="logo-text">Strax<span>io</span></div>
     </div>
-
     <nav class="nav">
       <button class="nav-btn active" data-page="dashboard">
         <span class="nav-icon">◈</span> Portfolio
@@ -628,9 +537,8 @@ body::before {
         <span class="nav-icon">⚙</span> Settings
       </button>
     </nav>
-
     <div class="sidebar-bottom">
-      <div class="network-pills">
+      <div class="net-pills">
         <div class="net-pill">
           <div class="net-dot" style="background:var(--eth-color)"></div>
           <span>Ethereum</span>
@@ -666,25 +574,52 @@ body::before {
     <!-- ═══ DASHBOARD ═══ -->
     <div class="page active" id="page-dashboard">
 
-      <!-- hero -->
-      <div class="hero">
-        <div class="hero-label">Total Balance</div>
-        <div class="hero-value">
-          <span class="currency">$</span><span id="total-usd">0</span><span class="cents" id="total-cents">.00</span>
-        </div>
-        <div class="network-summary">
-          <div class="net-card">
-            <div class="net-card-dot" style="background:var(--eth-color)"></div>
-            <div class="net-card-info">
-              <div class="net-card-name">Ethereum</div>
-              <div class="net-card-val">$<span id="eth-usd">0.00</span></div>
-            </div>
+      <div class="page-header">
+        <h1>Dashboard</h1>
+        <p>Ethereum & Tron wallet monitor</p>
+      </div>
+
+      <!-- stat grid -->
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-card-header">
+            <span class="stat-card-label">Ethereum</span>
+            <span class="stat-card-icon eth">⟠</span>
           </div>
-          <div class="net-card">
-            <div class="net-card-dot" style="background:var(--tron-color)"></div>
-            <div class="net-card-info">
-              <div class="net-card-name">Tron</div>
-              <div class="net-card-val">$<span id="tron-usd">0.00</span></div>
+          <div class="stat-card-value">$<span id="eth-usd">0.00</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-header">
+            <span class="stat-card-label">Tron</span>
+            <span class="stat-card-icon tron">◈</span>
+          </div>
+          <div class="stat-card-value">$<span id="tron-usd">0.00</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-header">
+            <span class="stat-card-label">Wallets</span>
+            <span class="stat-card-icon">▣</span>
+          </div>
+          <div class="stat-card-value" id="wallet-count">0</div>
+        </div>
+        <!-- dark hero -->
+        <div class="hero-card">
+          <div class="hero-card-label">Total Portfolio</div>
+          <div class="hero-card-value">$<span id="total-usd">0</span><span class="cents" id="total-cents">.00</span></div>
+          <div class="hero-card-split">
+            <div class="hero-split-item">
+              <div class="hero-split-label">Ethereum</div>
+              <div class="hero-split-val" id="hero-eth">$0.00</div>
+              <div class="hero-split-bar-bg">
+                <div class="hero-split-bar" id="hero-eth-bar" style="background:var(--eth-color);width:0%"></div>
+              </div>
+            </div>
+            <div class="hero-split-item">
+              <div class="hero-split-label">Tron</div>
+              <div class="hero-split-val" id="hero-tron">$0.00</div>
+              <div class="hero-split-bar-bg">
+                <div class="hero-split-bar" id="hero-tron-bar" style="background:var(--tron-color);width:0%"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -697,24 +632,24 @@ body::before {
         <button class="view-tab" onclick="switchView('history')">History</button>
       </div>
 
-      <!-- By Wallets view -->
+      <!-- By Wallet view -->
       <div id="view-wallets">
         <div class="wallets-list" id="balance-grid">
           <div class="empty-state">
             <div class="empty-icon">🔍</div>
-            <div class="empty-title">No wallets</div>
+            <div class="empty-title">No wallets yet</div>
             <div class="empty-sub">Add wallets in Settings to start monitoring</div>
           </div>
         </div>
       </div>
 
-      <!-- By Tokens view -->
+      <!-- By Token view -->
       <div id="view-tokens" style="display:none">
         <div class="asset-rows" id="asset-rows">
           <div class="empty-state">
             <div class="empty-icon">📊</div>
             <div class="empty-title">No data</div>
-            <div class="empty-sub">Refresh balances</div>
+            <div class="empty-sub">Refresh balances first</div>
           </div>
         </div>
       </div>
@@ -727,7 +662,6 @@ body::before {
 
       <!-- History view -->
       <div id="view-history" style="display:none">
-        <!-- filters bar -->
         <div class="history-filters">
           <div class="history-filter-row">
             <div class="filter-group">
@@ -736,7 +670,6 @@ body::before {
                 <button class="filter-chip active" data-type="all" onclick="setHistoryFilter(this,'type')">All</button>
                 <button class="filter-chip" data-type="send" onclick="setHistoryFilter(this,'type')">↑ Send</button>
                 <button class="filter-chip" data-type="receive" onclick="setHistoryFilter(this,'type')">↓ Receive</button>
-                <button class="filter-chip" data-type="trade" onclick="setHistoryFilter(this,'type')">⇄ Trade</button>
               </div>
             </div>
             <div class="filter-group-sep"></div>
@@ -768,26 +701,12 @@ body::before {
             <button class="btn btn-sm" onclick="exportHistoryCSV()" id="history-export-btn" style="display:none">↓ CSV</button>
           </div>
         </div>
-        <!-- stats row -->
         <div class="history-stats" id="history-stats" style="display:none">
-          <div class="hstat">
-            <div class="hstat-label">Transactions</div>
-            <div class="hstat-val" id="hstat-count">0</div>
-          </div>
-          <div class="hstat">
-            <div class="hstat-label">Sent</div>
-            <div class="hstat-val hstat-red" id="hstat-out">$0</div>
-          </div>
-          <div class="hstat">
-            <div class="hstat-label">Received</div>
-            <div class="hstat-val hstat-green" id="hstat-in">$0</div>
-          </div>
-          <div class="hstat">
-            <div class="hstat-label">Net</div>
-            <div class="hstat-val" id="hstat-net">$0</div>
-          </div>
+          <div class="hstat"><div class="hstat-label">Transactions</div><div class="hstat-val" id="hstat-count">0</div></div>
+          <div class="hstat"><div class="hstat-label">Sent</div><div class="hstat-val hstat-red" id="hstat-out">$0</div></div>
+          <div class="hstat"><div class="hstat-label">Received</div><div class="hstat-val hstat-green" id="hstat-in">$0</div></div>
+          <div class="hstat"><div class="hstat-label">Net</div><div class="hstat-val" id="hstat-net">$0</div></div>
         </div>
-        <!-- tx list -->
         <div id="history-list">
           <div class="empty-state">
             <div class="empty-icon">📋</div>
@@ -795,7 +714,6 @@ body::before {
             <div class="empty-sub">Click Load to fetch transactions</div>
           </div>
         </div>
-        <!-- export log -->
         <div class="log-panel" id="history-log-panel" style="display:none">
           <div class="log-header"><span>Load Log</span></div>
           <div class="log-body" id="history-log" style="max-height:120px"></div>
@@ -814,9 +732,12 @@ body::before {
 
     <!-- ═══ SETTINGS ═══ -->
     <div class="page" id="page-settings">
+      <div class="page-header">
+        <h1>Settings</h1>
+        <p>Manage wallets and API keys</p>
+      </div>
       <div class="settings-grid">
 
-        <!-- API Keys -->
         <div class="card">
           <div class="card-title">API Keys</div>
           <div class="field">
@@ -827,12 +748,11 @@ body::before {
           <div class="field">
             <label>TronGrid API Key <span style="color:var(--red)">*</span></label>
             <input type="password" id="tronscan-key" placeholder="your key from trongrid.io">
-            <div class="hint">Required for TRON. <a href="https://trongrid.io" target="_blank">trongrid.io</a> → Sign up → Create API Key</div>
+            <div class="hint">Required for Tron. <a href="https://trongrid.io" target="_blank">trongrid.io</a> → Sign up → Create API Key</div>
           </div>
           <button class="btn" onclick="saveKeys()">Save Keys</button>
         </div>
 
-        <!-- Add wallet -->
         <div class="card">
           <div class="card-title">Add Wallet</div>
           <div class="field">
@@ -850,10 +770,9 @@ body::before {
             <label>Address</label>
             <input type="text" id="wallet-address" placeholder="0x… or T…">
           </div>
-          <button class="btn" onclick="addWallet()">+ Add</button>
+          <button class="btn" onclick="addWallet()">+ Add Wallet</button>
         </div>
 
-        <!-- Wallets list -->
         <div class="card" style="grid-column: 1/-1">
           <div class="card-title">Wallets</div>
           <div class="wallet-list-settings" id="wallets-list">
@@ -861,7 +780,6 @@ body::before {
           </div>
         </div>
 
-        <!-- Data management -->
         <div class="card">
           <div class="card-title">Data</div>
           <div class="btn-row">
@@ -924,7 +842,8 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
     document.getElementById('page-' + page).classList.add('active');
     document.getElementById('page-title').textContent = pageTitles[page] || page;
     const showRefresh = page === 'dashboard';
-    document.getElementById('refresh-btn').style.display = showRefresh ? '' : 'none';  });
+    document.getElementById('refresh-btn').style.display = showRefresh ? '' : 'none';
+  });
 });
 
 /* ─── Toast ─── */
@@ -948,7 +867,6 @@ function logTo(id, msg, type = '') {
   el.innerHTML = `<span class="log-time">${t}</span><span class="log-msg">${msg}</span>`;
   container.appendChild(el);
   container.scrollTop = container.scrollHeight;
-  // update count only for the main dash log
   if (id === 'dash-log') {
     const countEl = document.getElementById('log-count');
     if (countEl) {
@@ -1238,7 +1156,7 @@ async function refreshBalances() {
       results.push({ ...w, balances: {}, usd: 0, error: e.message });
       logTo('dash-log', `✗ ${w.label}: ${e.message}`, 'err');
     }
-    await sleep(500); // pause between wallets
+    await sleep(500);
   }
 
   state.lastBalances = results;
@@ -1250,12 +1168,18 @@ async function refreshBalances() {
 }
 
 function renderBalances(results) {
-  const grid = document.getElementById('balance-grid');
-  const totalUsdEl    = document.getElementById('total-usd');
-  const totalCentsEl  = document.getElementById('total-cents');
-  const ethUsdEl      = document.getElementById('eth-usd');
-  const tronUsdEl     = document.getElementById('tron-usd');
-  const lastUpdateEl  = document.getElementById('last-update');
+  const grid        = document.getElementById('balance-grid');
+  const totalUsdEl  = document.getElementById('total-usd');
+  const totalCentsEl= document.getElementById('total-cents');
+  const ethUsdEl    = document.getElementById('eth-usd');
+  const tronUsdEl   = document.getElementById('tron-usd');
+  const walletCountEl = document.getElementById('wallet-count');
+  const heroEthEl   = document.getElementById('hero-eth');
+  const heroTronEl  = document.getElementById('hero-tron');
+  const heroEthBar  = document.getElementById('hero-eth-bar');
+  const heroTronBar = document.getElementById('hero-tron-bar');
+
+  if (walletCountEl) walletCountEl.textContent = results?.length || 0;
 
   if (!results || !results.length) {
     grid.innerHTML = `
@@ -1266,6 +1190,10 @@ function renderBalances(results) {
       </div>`;
     totalUsdEl.textContent = '0'; totalCentsEl.textContent = '.00';
     ethUsdEl.textContent = '0.00'; tronUsdEl.textContent = '0.00';
+    if (heroEthEl)  heroEthEl.textContent  = '$0.00';
+    if (heroTronEl) heroTronEl.textContent = '$0.00';
+    if (heroEthBar)  heroEthBar.style.width  = '0%';
+    if (heroTronBar) heroTronBar.style.width = '0%';
     updateLastUpdateDisplay();
     return;
   }
@@ -1275,31 +1203,37 @@ function renderBalances(results) {
   const trnSum = results.filter(r => r.network === 'tron').reduce((a, b) => a + (b.usd || 0), 0);
 
   const [intPart, decPart] = total.toFixed(2).split('.');
-  totalUsdEl.textContent  = Number(intPart).toLocaleString('en');
+  totalUsdEl.textContent   = Number(intPart).toLocaleString('en');
   totalCentsEl.textContent = '.' + decPart;
   ethUsdEl.textContent  = fmt(ethSum);
   tronUsdEl.textContent = fmt(trnSum);
 
+  if (heroEthEl)  heroEthEl.textContent  = '$' + fmt(ethSum);
+  if (heroTronEl) heroTronEl.textContent = '$' + fmt(trnSum);
+  if (total > 0 && heroEthBar && heroTronBar) {
+    heroEthBar.style.width  = (ethSum / total * 100).toFixed(1) + '%';
+    heroTronBar.style.width = (trnSum / total * 100).toFixed(1) + '%';
+  }
+
   updateLastUpdateDisplay();
 
-
   grid.innerHTML = results.map((w, idx) => {
-    const isEth  = w.network === 'ethereum';
+    const isEth    = w.network === 'ethereum';
     const netColor = isEth ? 'var(--eth-color)' : 'var(--tron-color)';
-    const netEmoji = isEth ? '⟠' : '🔴';
+    const netEmoji = isEth ? '⟠' : '◈';
     const netLabel = isEth ? 'Ethereum' : 'Tron';
 
     let tokensHtml = '';
     if (w.error) {
-      tokensHtml = `<div style="font-size:13px;color:var(--red);padding:8px 12px">⚠ ${escapeHtml(w.error)}</div>`;
+      tokensHtml = `<div style="font-size:13px;color:var(--red);padding:8px 10px">⚠ ${escapeHtml(w.error)}</div>`;
     } else if (w.balances) {
       const rows = [];
       if (isEth) {
-        if (w.balances.ETH !== undefined) rows.push({ sym:'ETH', icon:'⟠', cls:'tok-eth', net:'Ethereum', bal: w.balances.ETH, usd: w.balances.ETH * (priceCache.ETH||0), fmt4:true });
-        if (w.balances.USDT !== undefined) rows.push({ sym:'USDT', icon:'₮', cls:'tok-usdt', net:'ERC20', bal: w.balances.USDT, usd: w.balances.USDT });
-        if (w.balances.USDC !== undefined) rows.push({ sym:'USDC', icon:'$', cls:'tok-usdc', net:'ERC20', bal: w.balances.USDC, usd: w.balances.USDC });
+        if (w.balances.ETH  !== undefined) rows.push({ sym:'ETH',  icon:'⟠', cls:'tok-eth',  net:'Ethereum', bal: w.balances.ETH,  usd: w.balances.ETH * (priceCache.ETH||0), fmt4:true });
+        if (w.balances.USDT !== undefined) rows.push({ sym:'USDT', icon:'₮', cls:'tok-usdt', net:'ERC20',    bal: w.balances.USDT, usd: w.balances.USDT });
+        if (w.balances.USDC !== undefined) rows.push({ sym:'USDC', icon:'$', cls:'tok-usdc', net:'ERC20',    bal: w.balances.USDC, usd: w.balances.USDC });
       } else {
-        if (w.balances.TRX  !== undefined) rows.push({ sym:'TRX', icon:'◈', cls:'tok-trx', net:'Tron', bal: w.balances.TRX, usd: w.balances.TRX * (priceCache.TRX||0), fmt4:true });
+        if (w.balances.TRX  !== undefined) rows.push({ sym:'TRX',  icon:'◈', cls:'tok-trx',  net:'Tron',  bal: w.balances.TRX,  usd: w.balances.TRX * (priceCache.TRX||0), fmt4:true });
         if (w.balances.USDT !== undefined) rows.push({ sym:'USDT', icon:'₮', cls:'tok-usdt', net:'TRC20', bal: w.balances.USDT, usd: w.balances.USDT });
       }
       tokensHtml = `<div class="token-list">${rows.map(t => `
@@ -1320,7 +1254,7 @@ function renderBalances(results) {
     return `
       <div class="wallet-card" id="wcard-${idx}">
         <div class="wallet-card-header" onclick="toggleCard(${idx})">
-          <div class="wallet-avatar" style="background:rgba(${isEth?'98,126,234':'239,0,39'},0.12)">
+          <div class="wallet-avatar" style="background:rgba(${isEth?'98,126,234':'239,0,39'},0.10)">
             <span style="font-size:20px">${netEmoji}</span>
             <div class="net-badge" style="background:${netColor}">·</div>
           </div>
@@ -1414,15 +1348,15 @@ function base58decode(str) {
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 /* ─── View switching ─── */
-let currentView = 'wallets'; // 'wallets' | 'tokens' | 'detail'
-let prevView = 'wallets';
+let currentView = 'wallets';
+let prevView    = 'wallets';
 
 function switchView(view) {
   currentView = view;
-  document.getElementById('view-wallets').style.display       = view === 'wallets'  ? '' : 'none';
-  document.getElementById('view-tokens').style.display        = view === 'tokens'   ? '' : 'none';
-  document.getElementById('view-token-detail').style.display  = view === 'detail'   ? '' : 'none';
-  document.getElementById('view-history').style.display       = view === 'history'  ? '' : 'none';
+  document.getElementById('view-wallets').style.display      = view === 'wallets' ? '' : 'none';
+  document.getElementById('view-tokens').style.display       = view === 'tokens'  ? '' : 'none';
+  document.getElementById('view-token-detail').style.display = view === 'detail'  ? '' : 'none';
+  document.getElementById('view-history').style.display      = view === 'history' ? '' : 'none';
   document.querySelectorAll('.view-tab').forEach((btn, i) => {
     btn.classList.toggle('active',
       (i === 0 && view === 'wallets') ||
@@ -1438,9 +1372,7 @@ function renderAssetsByToken(results) {
   const el = document.getElementById('asset-rows');
   if (!results || !results.length) return;
 
-  // Aggregate balances per symbol
-  const tokens = {}; // sym -> { sym, icon, cls, wallets: [{label,addr,bal,usd,network}], totalBal, totalUsd }
-
+  const tokens = {};
   const TOK_META = {
     ETH:  { icon:'⟠', cls:'tok-eth',  price: () => priceCache.ETH||0, decimals: 4 },
     TRX:  { icon:'◈', cls:'tok-trx',  price: () => priceCache.TRX||0, decimals: 2 },
@@ -1459,7 +1391,6 @@ function renderAssetsByToken(results) {
       const netLabel = w.network === 'ethereum'
         ? (sym === 'ETH' ? 'Ethereum' : 'ERC20')
         : (sym === 'TRX' ? 'Tron' : 'TRC20');
-
       if (!tokens[sym]) tokens[sym] = { sym, ...meta, wallets: [], totalBal: 0, totalUsd: 0 };
       tokens[sym].wallets.push({ label: w.label, address: w.address, network: w.network, netLabel, bal, usd });
       tokens[sym].totalBal += bal;
@@ -1467,7 +1398,6 @@ function renderAssetsByToken(results) {
     }
   }
 
-  // Sort by USD desc
   const sorted = Object.values(tokens).sort((a, b) => b.totalUsd - a.totalUsd);
   if (!sorted.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-title">No data</div></div>'; return; }
 
@@ -1496,14 +1426,13 @@ function openTokenDetail(sym) {
   prevView = currentView;
 
   const TOK_META = {
-    ETH:  { icon:'⟠', cls:'tok-eth',  decimals: 4, netAvatar: '⟠', netBg:'rgba(98,126,234,0.15)' },
-    TRX:  { icon:'◈', cls:'tok-trx',  decimals: 2, netAvatar: '◈', netBg:'rgba(239,0,39,0.12)' },
-    USDT: { icon:'₮', cls:'tok-usdt', decimals: 2, netAvatar: '₮', netBg:'rgba(38,161,123,0.15)' },
-    USDC: { icon:'$', cls:'tok-usdc', decimals: 2, netAvatar: '$', netBg:'rgba(39,117,202,0.15)' },
+    ETH:  { icon:'⟠', cls:'tok-eth',  decimals: 4, netBg:'rgba(98,126,234,0.12)' },
+    TRX:  { icon:'◈', cls:'tok-trx',  decimals: 2, netBg:'rgba(239,0,39,0.10)' },
+    USDT: { icon:'₮', cls:'tok-usdt', decimals: 2, netBg:'rgba(22,163,74,0.12)' },
+    USDC: { icon:'$', cls:'tok-usdc', decimals: 2, netBg:'rgba(39,117,202,0.12)' },
   };
   const meta = TOK_META[sym] || { icon:'?', cls:'', decimals:2, netBg:'var(--bg3)' };
 
-  // Collect wallets that hold this token
   const wallets = [];
   for (const w of results) {
     if (!w.balances || w.balances[sym] === undefined) continue;
@@ -1523,7 +1452,7 @@ function openTokenDetail(sym) {
   const netNames = [...new Set(wallets.map(w => w.netLabel))].join(' · ');
 
   const byWalletHtml = wallets.map(w => {
-    const pct = totalUsd > 0 ? (w.usd / totalUsd * 100) : 0;
+    const pct    = totalUsd > 0 ? (w.usd / totalUsd * 100) : 0;
     const netEmoji = w.network === 'ethereum' ? '⟠' : '◈';
     const netBg    = w.network === 'ethereum' ? 'rgba(98,126,234,0.12)' : 'rgba(239,0,39,0.10)';
     return `
@@ -1536,7 +1465,7 @@ function openTokenDetail(sym) {
         <div class="detail-wallet-pct">
           <div style="font-size:11px;color:var(--text3);text-align:right">${pct.toFixed(1)}%</div>
           <div class="detail-pct-bar-bg">
-            <div class="detail-pct-bar" style="width:${pct}%;background:var(--accent)"></div>
+            <div class="detail-pct-bar" style="width:${pct}%"></div>
           </div>
         </div>
         <div class="detail-wallet-amount">
@@ -1559,7 +1488,6 @@ function openTokenDetail(sym) {
     </div>
     <div class="detail-by-wallet">${byWalletHtml}</div>`;
 
-  // show detail panel via switchView so all views are properly hidden
   switchView('detail');
 }
 
@@ -1575,7 +1503,6 @@ function updateSpamToggle() {
   track.classList.toggle('on', cb.checked);
   renderHistoryList();
 }
-// init on load
 document.addEventListener('DOMContentLoaded', () => {
   const cb = document.getElementById('hide-spam-check');
   if (cb) { cb.onchange = updateSpamToggle; updateSpamToggle(); }
@@ -1583,7 +1510,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /* ─── HISTORY ─── */
 let historyState = {
-  txs: [],          // all loaded txs
+  txs: [],
   filterType:   'all',
   filterWallet: 'all',
   filterPeriod: 30
@@ -1592,9 +1519,8 @@ let historyState = {
 function renderHistoryWalletChips() {
   const el = document.getElementById('history-wallet-chips');
   if (!el) return;
-  const wallets = state.wallets;
   el.innerHTML = `<button class="filter-chip ${historyState.filterWallet==='all'?'active':''}" data-wallet="all" onclick="setHistoryFilter(this,'wallet')">All</button>` +
-    wallets.map(w => `<button class="filter-chip ${historyState.filterWallet===w.address?'active':''}" data-wallet="${w.address}" onclick="setHistoryFilter(this,'wallet')">${escapeHtml(w.label)}</button>`).join('');
+    state.wallets.map(w => `<button class="filter-chip ${historyState.filterWallet===w.address?'active':''}" data-wallet="${w.address}" onclick="setHistoryFilter(this,'wallet')">${escapeHtml(w.label)}</button>`).join('');
 }
 
 function setHistoryFilter(btn, kind) {
@@ -1604,18 +1530,14 @@ function setHistoryFilter(btn, kind) {
   if (kind === 'wallet') { historyState.filterWallet = btn.dataset.wallet;  renderHistoryList(); }
   if (kind === 'period') {
     historyState.filterPeriod = Number(btn.dataset.period);
-    // Period change needs a fresh API load — auto-load if we already have data
     if (historyState.txs.length) loadHistory();
     else renderHistoryList();
   }
 }
 
-/* token symbol → USD price cache (for history spam filter) */
-let tokenPriceCache = {}; // symbol → price (0 = worthless/unknown)
+let tokenPriceCache = {};
 
-/* CoinGecko simple price lookup by symbol list */
 async function fetchTokenPrices(symbols) {
-  // Map common symbols to CoinGecko IDs
   const KNOWN_IDS = {
     ETH:'ethereum', BTC:'bitcoin', TRX:'tron', USDT:'tether', USDC:'usd-coin',
     USDC_E:'usd-coin', WETH:'weth', WBTC:'wrapped-bitcoin', BNB:'binancecoin',
@@ -1624,15 +1546,11 @@ async function fetchTokenPrices(symbols) {
     ARB:'arbitrum', OP:'optimism', LDO:'lido-dao', MKR:'maker',
     CRV:'curve-dao-token', SUSHI:'sushi', COMP:'compound-governance-token',
   };
-
   const toFetch = symbols.map(s => s.toUpperCase()).filter(s => !(s in tokenPriceCache));
   if (!toFetch.length) return;
-
   const ids = [...new Set(toFetch.map(s => KNOWN_IDS[s]).filter(Boolean))];
-  // Mark all symbols not in KNOWN_IDS as 0 immediately
   toFetch.forEach(s => { if (!KNOWN_IDS[s]) tokenPriceCache[s] = 0; });
   if (!ids.length) return;
-
   try {
     const r = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids.join(',')}&vs_currencies=usd`);
     const j = await r.json();
@@ -1642,7 +1560,6 @@ async function fetchTokenPrices(symbols) {
       const id = KNOWN_IDS[s];
       if (id) tokenPriceCache[s] = idToPrice[id] ?? 0;
     }
-    // sync ETH/TRX into main priceCache
     if (idToPrice['ethereum']) priceCache.ETH = idToPrice['ethereum'];
     if (idToPrice['tron'])     priceCache.TRX = idToPrice['tron'];
   } catch {
@@ -1650,43 +1567,37 @@ async function fetchTokenPrices(symbols) {
   }
 }
 
-/* ─── Legitimate contract whitelist (Ethereum + Tron) ─── */
 const LEGIT_CONTRACTS = new Set([
-  // Ethereum ERC20 — lowercase
-  '0xdac17f958d2ee523a2206206994597c13d831ec7', // USDT
-  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', // USDC (native)
-  '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913', // USDC (Base) - in case
-  '0x2791bca1f2de4661ed88a30c99a7a9449aa84174', // USDC (Polygon)
-  '0xaf88d065e77c8cc2239327c5edb3a432268e5831', // USDC (Arbitrum)
-  '0x6b175474e89094c44da98b954eedeac495271d0f', // DAI
-  '0x4fabb145d64652a948d72533023f6e7a623c7c53', // BUSD
-  '0x956f47f50a910163d8bf957cf5846d573e7f87ca', // FEI
-  '0x853d955acef822db058eb8505911ed77f175b99e', // FRAX
-  '0x5f98805a4e8be255a32880fdec7f6728c6568ba0', // LUSD
-  '0xd533a949740bb3306d119cc777fa900ba034cd52', // CRV
-  '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', // WETH
-  '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', // WBTC
-  '0x514910771af9ca656af840dff83e8264ecf986ca', // LINK
-  '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984', // UNI
-  '0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9', // AAVE
-  '0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce', // SHIB
-  '0x6982508145454ce325ddbe47a25d4ec3d2311933', // PEPE
-  // Tron TRC20 — Tron addresses
-  'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',         // USDT (TRC20)
-  'TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8',          // USDC (TRC20)
+  '0xdac17f958d2ee523a2206206994597c13d831ec7',
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+  '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
+  '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
+  '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
+  '0x6b175474e89094c44da98b954eedeac495271d0f',
+  '0x4fabb145d64652a948d72533023f6e7a623c7c53',
+  '0x956f47f50a910163d8bf957cf5846d573e7f87ca',
+  '0x853d955acef822db058eb8505911ed77f175b99e',
+  '0x5f98805a4e8be255a32880fdec7f6728c6568ba0',
+  '0xd533a949740bb3306d119cc777fa900ba034cd52',
+  '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+  '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599',
+  '0x514910771af9ca656af840dff83e8264ecf986ca',
+  '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984',
+  '0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9',
+  '0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce',
+  '0x6982508145454ce325ddbe47a25d4ec3d2311933',
+  'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',
+  'TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8',
 ]);
 
-/* Stablecoin symbols that MUST match a legit contract to be trusted */
 const STABLE_SYMBOLS = new Set(['USDT','USDC','USDC_E','DAI','BUSD','TUSD','FRAX','LUSD','CRVUSD','PYUSD','FDUSD','USDP','GUSD']);
 
-/* Check if a tx is a fake/phishing token impersonating a stablecoin */
 function isFakeStable(sym, contractAddress) {
-  if (!STABLE_SYMBOLS.has(sym.toUpperCase())) return false; // not a stablecoin name → not fake
-  if (!contractAddress) return false; // no contract (native coin) → not fake
+  if (!STABLE_SYMBOLS.has(sym.toUpperCase())) return false;
+  if (!contractAddress) return false;
   return !LEGIT_CONTRACTS.has(contractAddress.toLowerCase());
 }
 
-/* Get USD price for any token symbol, contract-aware */
 function tokenUsd(sym, amount, contractAddress) {
   if (isFakeStable(sym, contractAddress)) return 0;
   const s = (sym || '').toUpperCase();
@@ -1694,7 +1605,7 @@ function tokenUsd(sym, amount, contractAddress) {
   if (s === 'ETH') return amount * (priceCache.ETH || 0);
   if (s === 'TRX') return amount * (priceCache.TRX || 0);
   const p = tokenPriceCache[s];
-  if (p === undefined) return null; // price not yet fetched
+  if (p === undefined) return null;
   return amount * p;
 }
 
@@ -1706,10 +1617,10 @@ async function loadHistory() {
   logPanel.style.display = '';
   clearLog('history-log');
 
-  const days     = historyState.filterPeriod;
-  const endTs    = Date.now();
-  const startTs  = endTs - days * 86400000;
-  const allTxs   = [];
+  const days    = historyState.filterPeriod;
+  const endTs   = Date.now();
+  const startTs = endTs - days * 86400000;
+  const allTxs  = [];
 
   const walletsToLoad = historyState.filterWallet === 'all'
     ? state.wallets
@@ -1777,8 +1688,6 @@ async function loadHistory() {
   }
 
   historyState.txs = allTxs.sort((a, b) => b.date - a.date);
-
-  // Fetch prices for all unique token symbols found
   const uniqueSymbols = [...new Set(allTxs.map(t => (t.asset||'').toUpperCase()))];
   logTo('history-log', `Fetching prices for ${uniqueSymbols.length} tokens...`);
   await fetchTokenPrices(uniqueSymbols);
@@ -1794,19 +1703,16 @@ function renderHistoryList() {
   const hideSpam = document.getElementById('hide-spam-check')?.checked ?? true;
 
   let filtered = txs;
-  if (filterType   !== 'all')    filtered = filtered.filter(t => t.type === filterType);
-  if (filterWallet !== 'all')    filtered = filtered.filter(t => t.walletAddr === filterWallet);
+  if (filterType   !== 'all') filtered = filtered.filter(t => t.type === filterType);
+  if (filterWallet !== 'all') filtered = filtered.filter(t => t.walletAddr === filterWallet);
 
-  // Spam filter: remove txs with USD value ≤ $1 OR with unknown/zero-value tokens
   let spamCount = 0;
   if (hideSpam) {
-    const SPAM_THRESHOLD_USD = 1.00;
     const before = filtered.length;
     filtered = filtered.filter(t => {
       const usd = tokenUsd(t.asset, t.amount, t.contractAddress);
-      // null = price not loaded (treat as spam); 0 = worthless token (spam); ≤ threshold = dust
-      if (usd === null) return false; // price unknown → spam
-      return usd > SPAM_THRESHOLD_USD;
+      if (usd === null) return false;
+      return usd > 1.00;
     });
     spamCount = before - filtered.length;
   }
@@ -1816,12 +1722,11 @@ function renderHistoryList() {
 
   if (!filtered.length) {
     const spamNote = hideSpam && spamCount > 0 ? ` (${spamCount} spam hidden)` : '';
-    el.innerHTML = `<div class="empty-state"><div class="empty-icon">${txs.length ? '🔍' : '📋'}</div><div class="empty-title">${txs.length ? 'No transactions match the filter' : 'Transaction History'}</div><div class="empty-sub">${txs.length ? 'Try different filters' + spamNote : 'Click Load to start'}</div></div>`;
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">${txs.length ? '🔍' : '📋'}</div><div class="empty-title">${txs.length ? 'No transactions match' : 'Transaction History'}</div><div class="empty-sub">${txs.length ? 'Try different filters' + spamNote : 'Click Load to start'}</div></div>`;
     statsEl.style.display = 'none';
     return;
   }
 
-  // compute stats
   let outUsd = 0, inUsd = 0;
   for (const t of filtered) {
     const usd = tokenUsd(t.asset, t.amount, t.contractAddress) ?? 0;
@@ -1831,30 +1736,30 @@ function renderHistoryList() {
   const net = inUsd - outUsd;
   document.getElementById('hstat-count').innerHTML = filtered.length +
     (spamCount > 0 && hideSpam ? ` <span class="spam-badge">+${spamCount} spam</span>` : '');
-  document.getElementById('hstat-out').textContent   = '-$' + fmt(outUsd);
-  document.getElementById('hstat-in').textContent    = '+$' + fmt(inUsd);
+  document.getElementById('hstat-out').textContent = '-$' + fmt(outUsd);
+  document.getElementById('hstat-in').textContent  = '+$' + fmt(inUsd);
   const netEl = document.getElementById('hstat-net');
   netEl.textContent = (net >= 0 ? '+' : '') + '$' + fmt(Math.abs(net));
-  netEl.className = 'hstat-val ' + (net >= 0 ? 'hstat-green' : 'hstat-red');
+  netEl.className   = 'hstat-val ' + (net >= 0 ? 'hstat-green' : 'hstat-red');
   statsEl.style.display = '';
 
   const EXPLORER_ETH  = 'https://etherscan.io/tx/';
   const EXPLORER_TRON = 'https://tronscan.org/#/transaction/';
 
   el.innerHTML = `<div class="tx-list">${filtered.map(t => {
-    const isSend = t.type === 'send';
-    const icon   = isSend ? '↑' : '↓';
-    const label  = isSend ? 'Send' : 'Receive';
-    const cls    = isSend ? 'send' : 'receive';
-    const amtCls = isSend ? 'out' : 'in';
-    const sign   = isSend ? '-' : '+';
-    const isFake = isFakeStable(t.asset, t.contractAddress);
-    const usd    = tokenUsd(t.asset, t.amount, t.contractAddress) ?? 0;
-    const d      = new Date(t.date);
-    const dateStr= d.toLocaleDateString('en-GB') + ' ' + d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-    const counterpart = isSend ? t.to : t.from;
+    const isSend   = t.type === 'send';
+    const icon     = isSend ? '↑' : '↓';
+    const label    = isSend ? 'Send' : 'Receive';
+    const cls      = isSend ? 'send' : 'receive';
+    const amtCls   = isSend ? 'out' : 'in';
+    const sign     = isSend ? '-' : '+';
+    const isFake   = isFakeStable(t.asset, t.contractAddress);
+    const usd      = tokenUsd(t.asset, t.amount, t.contractAddress) ?? 0;
+    const d        = new Date(t.date);
+    const dateStr  = d.toLocaleDateString('en-GB') + ' ' + d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    const counterpart  = isSend ? t.to : t.from;
     const explorerBase = t.network === 'tron' ? EXPLORER_TRON : EXPLORER_ETH;
-    const shortHash = t.hash ? (t.hash.slice(0,8)+'…'+t.hash.slice(-6)) : '';
+    const shortHash    = t.hash ? (t.hash.slice(0,8)+'…'+t.hash.slice(-6)) : '';
     return `
       <div class="tx-row">
         <div class="tx-icon ${cls}">${icon}</div>
@@ -1889,7 +1794,7 @@ function exportHistoryCSV() {
     rows.push([new Date(t.date).toISOString(), t.wallet, t.network, t.type, t.asset, t.amount.toFixed(8), t.from, t.to, t.hash]);
   }
   const csv  = rows.map(r => r.map(csvEscape).join(',')).join('\n');
-  const blob = new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const blob = new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
   const a    = document.createElement('a');
   a.href     = URL.createObjectURL(blob);
   a.download = `history_${new Date().toISOString().slice(0,10)}.csv`;
@@ -1902,7 +1807,7 @@ function updateLastUpdateDisplay() {
   const el = document.getElementById('last-update');
   if (!el) return;
   if (!state.lastUpdate) { el.textContent = '—'; el.className = 'topbar-meta'; return; }
-  const ageMs  = Date.now() - new Date(state.lastUpdate).getTime();
+  const ageMs   = Date.now() - new Date(state.lastUpdate).getTime();
   const ageMins = Math.floor(ageMs / 60000);
   let text;
   if (ageMins < 1)       text = 'updated just now';
@@ -1924,7 +1829,10 @@ function setAutoRefresh(seconds) {
 
 /* ─── INIT ─── */
 renderSettings();
+const walletCountEl = document.getElementById('wallet-count');
+if (walletCountEl) walletCountEl.textContent = state.wallets.length;
 if (state.lastBalances?.length) renderBalances(state.lastBalances);
+updateLastUpdateDisplay();
 
 const hasTronWallets = state.wallets.some(w => w.network === 'tron');
 const canStart = state.wallets.length && state.keys.etherscan && (!hasTronWallets || state.keys.tronscan);
