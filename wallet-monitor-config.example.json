@@ -1,0 +1,20 @@
+{
+  "keys": {
+    "etherscan": "YOUR_ETHERSCAN_API_KEY",
+    "tronscan": "YOUR_TRONGRID_API_KEY"
+  },
+  "wallets": [
+    {
+      "label": "My ETH Wallet",
+      "network": "ethereum",
+      "address": "0xYourEthereumAddressHere"
+    },
+    {
+      "label": "My TRX Wallet",
+      "network": "tron",
+      "address": "TYourTronAddressHere"
+    }
+  ],
+  "lastBalances": null,
+  "lastUpdate": null
+}

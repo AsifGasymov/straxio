@@ -1,0 +1,6 @@
+# User config — contains real API keys and wallet addresses, never commit
+wallet-monitor-config*.json
+!wallet-monitor-config.example.json
+
+# macOS
+.DS_Store

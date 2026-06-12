@@ -1,0 +1,1941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Straxio — Wallet Monitor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:          #f4faf6;
+  --bg2:         #ffffff;
+  --bg3:         #eef7f1;
+  --bg4:         #e0f0e6;
+  --border:      rgba(22,163,74,0.12);
+  --border2:     rgba(22,163,74,0.25);
+  --text:        #0d1f14;
+  --text2:       #3d6b4f;
+  --text3:       #7aaa8a;
+  --accent:      #16a34a;
+  --accent2:     #22c55e;
+  --accent3:     #4ade80;
+  --green:       #16a34a;
+  --green-bg:    rgba(22,163,74,0.1);
+  --red:         #dc2626;
+  --red-bg:      rgba(220,38,38,0.08);
+  --yellow:      #d97706;
+  --yellow-bg:   rgba(217,119,6,0.1);
+  --eth-color:   #4f6ef7;
+  --tron-color:  #ef0027;
+  --usdt-color:  #16a34a;
+  --mono:        'DM Mono', 'SF Mono', monospace;
+  --sans:        'DM Sans', system-ui, sans-serif;
+  --r-sm:        8px;
+  --r-md:        12px;
+  --r-lg:        16px;
+  --r-xl:        20px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── ambient background ─── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 80% 40% at 20% -10%, rgba(22,163,74,0.10) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 30% at 80% 110%, rgba(34,197,94,0.07) 0%, transparent 60%);
+  pointer-events: none;
+}
+.app { position: relative; z-index: 1; display: flex; min-height: 100vh; }
+
+/* ─── sidebar ─── */
+.sidebar {
+  width: 220px; flex-shrink: 0;
+  background: #ffffff;
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  padding: 24px 0;
+  position: fixed; top: 0; left: 0; bottom: 0;
+  box-shadow: 2px 0 12px rgba(22,163,74,0.06);
+}
+.sidebar-logo {
+  padding: 0 20px 28px;
+  display: flex; align-items: center; gap: 10px;
+}
+.logo-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(22,163,74,0.3);
+}
+.logo-text { font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: -0.02em; }
+.logo-text span { color: var(--accent2); }
+
+.nav { display: flex; flex-direction: column; gap: 2px; padding: 0 12px; flex: 1; }
+.nav-btn {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  border: none; background: none;
+  color: var(--text2); cursor: pointer;
+  font-family: var(--sans); font-size: 14px; font-weight: 500;
+  transition: all 0.15s;
+  text-align: left; width: 100%;
+}
+.nav-btn:hover { background: var(--bg3); color: var(--text); }
+.nav-btn.active { background: rgba(22,163,74,0.12); color: var(--accent); }
+.nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+.sidebar-bottom { padding: 12px 12px 0; border-top: 1px solid var(--border); }
+.network-pills { display: flex; flex-direction: column; gap: 6px; padding: 12px 0; }
+.net-pill {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 12px; border-radius: 6px;
+  font-size: 12px; color: var(--text3);
+}
+.net-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+/* ─── main content ─── */
+.main {
+  margin-left: 220px;
+  flex: 1;
+  display: flex; flex-direction: column;
+}
+
+/* ─── topbar ─── */
+.topbar {
+  height: 64px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 32px;
+  gap: 16px;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(12px);
+  position: sticky; top: 0; z-index: 10;
+}
+.topbar-title { font-size: 16px; font-weight: 600; flex: 1; }
+.topbar-meta { font-size: 12px; color: var(--text3); font-family: var(--mono); }
+.topbar-meta.stale { color: var(--yellow); }
+.auto-refresh-wrap { display: flex; align-items: center; gap: 6px; }
+.auto-refresh-wrap select {
+  padding: 6px 8px; border-radius: 6px; font-size: 12px;
+  background: var(--bg3); border: 1px solid var(--border2);
+  color: var(--text2); font-family: var(--sans); cursor: pointer; outline: none;
+}
+
+.btn-refresh {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 16px; border-radius: 8px;
+  background: var(--accent); border: none;
+  color: white; cursor: pointer;
+  font-family: var(--sans); font-size: 13px; font-weight: 600;
+  transition: all 0.15s;
+  box-shadow: 0 1px 6px rgba(22,163,74,0.3);
+}
+.btn-refresh:hover { background: #15803d; }
+.btn-refresh.spinning .refresh-icon { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.refresh-icon { display: inline-block; }
+
+/* ─── page content ─── */
+.page { display: none; flex: 1; padding: 32px; }
+.page.active { display: block; }
+
+/* ─── hero total ─── */
+.hero {
+  margin-bottom: 32px;
+}
+.hero-label {
+  font-size: 13px; color: var(--text3); font-weight: 500;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+.hero-value {
+  font-size: 48px; font-weight: 300; letter-spacing: -0.04em;
+  color: var(--text); line-height: 1;
+  margin-bottom: 16px;
+}
+.hero-value .currency { font-size: 28px; color: var(--text2); margin-right: 4px; }
+.hero-value .cents { font-size: 28px; color: var(--text2); }
+
+.network-summary {
+  display: flex; gap: 12px; flex-wrap: wrap;
+}
+.net-card {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px; border-radius: var(--r-md);
+  background: var(--bg2); border: 1px solid var(--border);
+  min-width: 160px;
+}
+.net-card-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.net-card-info {}
+.net-card-name { font-size: 11px; color: var(--text3); font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; }
+.net-card-val { font-size: 15px; font-weight: 600; color: var(--text); margin-top: 1px; }
+
+/* ─── section header ─── */
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.section-title {
+  font-size: 13px; color: var(--text3); font-weight: 500;
+  text-transform: uppercase; letter-spacing: 0.08em;
+}
+
+/* ─── wallet cards ─── */
+.wallets-list { display: flex; flex-direction: column; gap: 8px; }
+
+.wallet-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+.wallet-card:hover { border-color: var(--border2); }
+
+.wallet-card-header {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 20px;
+  cursor: pointer;
+}
+.wallet-avatar {
+  width: 40px; height: 40px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+  position: relative;
+}
+.wallet-avatar .net-badge {
+  position: absolute; bottom: -2px; right: -2px;
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid var(--bg2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 8px;
+}
+.wallet-info { flex: 1; min-width: 0; }
+.wallet-label { font-size: 15px; font-weight: 600; color: var(--text); }
+.wallet-addr {
+  font-size: 12px; color: var(--text3); font-family: var(--mono);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.wallet-usd {
+  font-size: 18px; font-weight: 600; color: var(--text);
+  text-align: right;
+}
+.wallet-usd-sub { font-size: 12px; color: var(--text3); text-align: right; margin-top: 2px; }
+
+.wallet-tokens {
+  display: none;
+  padding: 0 20px 16px;
+  border-top: 1px solid var(--border);
+}
+.wallet-card.expanded .wallet-tokens { display: block; }
+.wallet-card.expanded .wallet-card-header { padding-bottom: 14px; }
+
+.token-list { display: flex; flex-direction: column; gap: 2px; margin-top: 12px; }
+.token-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px 12px; border-radius: 8px;
+  transition: background 0.1s;
+}
+.token-row:hover { background: var(--bg3); }
+.token-icon {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700; flex-shrink: 0;
+  font-family: var(--mono);
+}
+.token-name { flex: 1; }
+.token-symbol { font-size: 14px; font-weight: 600; color: var(--text); }
+.token-network { font-size: 11px; color: var(--text3); }
+.token-amount { text-align: right; }
+.token-bal { font-size: 14px; font-weight: 500; color: var(--text); font-family: var(--mono); }
+.token-usd { font-size: 12px; color: var(--text3); }
+
+/* token colors */
+.tok-eth  { background: rgba(98,126,234,0.15); color: var(--eth-color); }
+.tok-trx  { background: rgba(239,0,39,0.12);   color: #ff4d6a; }
+.tok-usdt { background: rgba(38,161,123,0.15); color: var(--usdt-color); }
+.tok-usdc { background: rgba(39,117,202,0.15); color: #5b9cf6; }
+
+/* ─── empty state ─── */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 80px 32px; text-align: center; gap: 12px;
+}
+.empty-icon { font-size: 48px; opacity: 0.3; }
+.empty-title { font-size: 18px; font-weight: 600; color: var(--text2); }
+.empty-sub { font-size: 14px; color: var(--text3); max-width: 300px; }
+
+/* ─── loading ─── */
+.skeleton {
+  background: linear-gradient(90deg, var(--bg3) 25%, var(--bg4) 50%, var(--bg3) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 6px;
+}
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* progress bar */
+.detail-pct-bar { height: 4px; border-radius: 2px; background: var(--accent); transition: width 0.4s ease; }
+
+/* ─── log ─── */
+.log-panel {
+  margin-top: 24px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+.log-header {
+  padding: 10px 16px;
+  font-size: 11px; color: var(--text3); font-weight: 500;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.log-body {
+  max-height: 160px; overflow-y: auto;
+  padding: 8px 0;
+}
+.log-entry {
+  display: flex; align-items: baseline; gap: 10px;
+  padding: 4px 16px; font-size: 12px; font-family: var(--mono);
+}
+.log-time { color: var(--text3); flex-shrink: 0; }
+.log-msg { color: var(--text2); }
+.log-entry.ok .log-msg  { color: var(--green); }
+.log-entry.err .log-msg { color: var(--red); }
+.log-entry.warn .log-msg{ color: var(--yellow); }
+
+/* ─── SETTINGS PAGE ─── */
+.settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 900px; }
+@media (max-width: 768px) { .settings-grid { grid-template-columns: 1fr; } }
+
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 20px;
+}
+.card-title {
+  font-size: 13px; font-weight: 600; color: var(--text);
+  margin-bottom: 16px; letter-spacing: -0.01em;
+}
+.card-sub { font-size: 12px; color: var(--text3); margin-bottom: 16px; margin-top: -10px; }
+
+.field { margin-bottom: 14px; }
+.field:last-child { margin-bottom: 0; }
+.field label {
+  display: block; font-size: 12px; color: var(--text3);
+  font-weight: 500; margin-bottom: 6px;
+}
+.field input, .field select {
+  width: 100%; padding: 9px 12px;
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: var(--r-sm); color: var(--text);
+  font-family: var(--mono); font-size: 13px;
+  outline: none; transition: border-color 0.15s;
+}
+.field input:focus, .field select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(22,163,74,0.1); }
+.field input::placeholder { color: var(--text3); }
+.field .hint { font-size: 11px; color: var(--text3); margin-top: 5px; }
+.field .hint a { color: var(--accent2); text-decoration: none; }
+
+.btn {
+  padding: 9px 16px; border-radius: 8px;
+  background: var(--accent); border: none;
+  color: white; cursor: pointer;
+  font-family: var(--sans); font-size: 13px; font-weight: 600;
+  transition: all 0.15s;
+}
+.btn:hover { background: #15803d; }
+.btn-ghost {
+  background: var(--bg3); color: var(--text2);
+  border: 1px solid var(--border2);
+}
+.btn-ghost:hover { background: var(--bg4); color: var(--text); }
+.btn-danger { background: rgba(220,38,38,0.08); color: var(--red); border: 1px solid rgba(220,38,38,0.2); }
+.btn-danger:hover { background: rgba(220,38,38,0.15); }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* wallet list in settings */
+.wallet-list-settings { display: flex; flex-direction: column; gap: 6px; }
+.wallet-item-settings {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 8px;
+  background: var(--bg3); border: 1px solid var(--border);
+}
+.wallet-item-settings .net-tag {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  padding: 2px 7px; border-radius: 4px;
+}
+.net-tag.eth { background: rgba(98,126,234,0.2); color: var(--eth-color); }
+.net-tag.tron { background: rgba(239,0,39,0.15); color: #ff4d6a; }
+.wallet-item-settings .wlabel { font-size: 13px; font-weight: 500; flex: 1; }
+.wallet-item-settings .waddr { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+.del-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--text3); font-size: 16px; padding: 4px;
+  border-radius: 4px; line-height: 1; transition: color 0.15s;
+}
+.del-btn:hover { color: var(--red); }
+
+/* ─── STATEMENTS PAGE ─── */
+.statements-layout { display: grid; grid-template-columns: 300px 1fr; gap: 16px; max-width: 900px; }
+@media (max-width: 768px) { .statements-layout { grid-template-columns: 1fr; } }
+
+.preset-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.chip {
+  padding: 5px 12px; border-radius: 20px;
+  background: var(--bg3); border: 1px solid var(--border2);
+  color: var(--text2); cursor: pointer; font-size: 12px; font-weight: 500;
+  transition: all 0.15s;
+}
+.chip:hover { background: var(--bg4); color: var(--text); }
+
+.export-summary {
+  background: var(--bg3); border-radius: 8px;
+  padding: 12px 14px; margin-top: 14px;
+  font-size: 12px; color: var(--text3);
+}
+.export-summary strong { color: var(--text); }
+
+/* ─── toast ─── */
+.toast-container {
+  position: fixed; bottom: 24px; right: 24px; z-index: 999;
+  display: flex; flex-direction: column; gap: 8px; align-items: flex-end;
+}
+.toast {
+  padding: 10px 16px; border-radius: 10px;
+  font-size: 13px; font-weight: 500;
+  animation: toast-in 0.2s ease, toast-out 0.2s ease 2.8s forwards;
+  max-width: 320px;
+}
+@keyframes toast-in  { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes toast-out { from { opacity: 1; } to { opacity: 0; } }
+.toast.ok   { background: var(--green-bg);  color: var(--green);  border: 1px solid rgba(52,211,153,0.3); }
+.toast.err  { background: var(--red-bg);    color: var(--red);    border: 1px solid rgba(248,113,113,0.3); }
+.toast.info { background: var(--bg3);       color: var(--text);   border: 1px solid var(--border2); }
+
+/* ─── Assets by token (portfolio view) ─── */
+.view-tabs {
+  display: flex; gap: 4px;
+  background: var(--bg3); border-radius: 10px; padding: 4px;
+  width: fit-content; margin-bottom: 20px;
+}
+.view-tab {
+  padding: 6px 16px; border-radius: 7px; border: none;
+  background: none; color: var(--text2); cursor: pointer;
+  font-family: var(--sans); font-size: 13px; font-weight: 500;
+  transition: all 0.15s;
+}
+.view-tab.active { background: var(--bg2); color: var(--accent); box-shadow: 0 1px 3px rgba(22,163,74,0.15); font-weight: 600; }
+
+/* token summary rows (By Token view) */
+.asset-rows { display: flex; flex-direction: column; gap: 2px; }
+.asset-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 16px; border-radius: var(--r-md);
+  background: var(--bg2); border: 1px solid var(--border);
+  cursor: pointer; transition: all 0.15s;
+}
+.asset-row:hover { border-color: var(--border2); background: var(--bg3); }
+.asset-row-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; flex-shrink: 0; }
+.asset-row-info { flex: 1; }
+.asset-row-name { font-size: 15px; font-weight: 600; color: var(--text); }
+.asset-row-sub { font-size: 12px; color: var(--text3); margin-top: 1px; }
+.asset-row-right { text-align: right; }
+.asset-row-usd { font-size: 16px; font-weight: 600; color: var(--text); }
+.asset-row-bal { font-size: 12px; color: var(--text3); font-family: var(--mono); }
+.asset-row-chevron { color: var(--text3); font-size: 14px; margin-left: 4px; }
+
+/* ─── Token detail page ─── */
+.token-detail { display: none; }
+.token-detail.active { display: block; }
+
+.detail-back {
+  display: flex; align-items: center; gap: 8px;
+  background: none; border: none; color: var(--text2);
+  font-family: var(--sans); font-size: 14px; cursor: pointer;
+  padding: 0; margin-bottom: 24px; transition: color 0.15s;
+}
+.detail-back:hover { color: var(--text); }
+
+.detail-hero {
+  display: flex; align-items: center; gap: 16px; margin-bottom: 28px;
+}
+.detail-icon { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 700; }
+.detail-title { font-size: 28px; font-weight: 300; letter-spacing: -0.03em; }
+.detail-title span { color: var(--text2); }
+.detail-sub { font-size: 14px; color: var(--text3); margin-top: 4px; }
+
+.detail-by-wallet { display: flex; flex-direction: column; gap: 6px; }
+.detail-wallet-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 18px; border-radius: var(--r-md);
+  background: var(--bg2); border: 1px solid var(--border);
+}
+.detail-wallet-avatar { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.detail-wallet-info { flex: 1; min-width: 0; }
+.detail-wallet-label { font-size: 14px; font-weight: 600; color: var(--text); }
+.detail-wallet-addr { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+.detail-wallet-pct { width: 120px; }
+.detail-pct-bar-bg { height: 4px; background: var(--bg4); border-radius: 2px; margin-top: 5px; }
+.detail-wallet-amount { text-align: right; }
+.detail-wallet-bal { font-size: 14px; font-weight: 600; color: var(--text); font-family: var(--mono); }
+.detail-wallet-usd { font-size: 12px; color: var(--text3); }
+
+/* ─── HISTORY ─── */
+.history-filters {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: nowrap;
+  padding: 12px 18px; border-radius: var(--r-lg);
+  background: var(--bg2); border: 1px solid var(--border);
+  margin-bottom: 16px;
+  overflow-x: auto;
+}
+.history-filter-row { display: flex; align-items: center; flex-wrap: nowrap; gap: 12px; flex: 1; min-width: 0; }
+.filter-group { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.filter-label { font-size: 11px; color: var(--text3); font-weight: 600; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.05em; }
+.filter-chips { display: flex; gap: 4px; flex-wrap: nowrap; }
+.filter-group-sep { width: 1px; height: 20px; background: var(--border2); flex-shrink: 0; }
+.filter-chip {
+  padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border2);
+  background: var(--bg3); color: var(--text2); cursor: pointer;
+  font-family: var(--sans); font-size: 12px; font-weight: 500;
+  transition: all 0.15s;
+}
+.filter-chip:hover { background: var(--bg4); color: var(--text); }
+.filter-chip.active {
+  background: var(--accent); color: white; border-color: var(--accent);
+  box-shadow: 0 1px 4px rgba(22,163,74,0.3);
+}
+
+.history-stats {
+  display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px;
+}
+.hstat {
+  flex: 1; min-width: 100px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--r-md); padding: 14px 18px;
+}
+.hstat-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500; }
+.hstat-val { font-size: 20px; font-weight: 600; color: var(--text); margin-top: 4px; font-family: var(--mono); }
+.hstat-green { color: var(--green); }
+.hstat-red   { color: var(--red); }
+
+.tx-list { display: flex; flex-direction: column; gap: 4px; }
+.tx-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 18px; border-radius: var(--r-md);
+  background: var(--bg2); border: 1px solid var(--border);
+  transition: border-color 0.12s;
+}
+.tx-row:hover { border-color: var(--border2); }
+.tx-icon {
+  width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 15px;
+}
+.tx-icon.send    { background: rgba(220,38,38,0.08); }
+.tx-icon.receive { background: rgba(22,163,74,0.10); }
+.tx-info { flex: 1; min-width: 0; }
+.tx-type { font-size: 14px; font-weight: 600; color: var(--text); }
+.tx-meta { font-size: 11px; color: var(--text3); font-family: var(--mono); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tx-wallet { font-size: 11px; color: var(--text2); font-weight: 500; }
+.tx-amount { text-align: right; flex-shrink: 0; }
+.tx-amount-val { font-size: 15px; font-weight: 600; font-family: var(--mono); }
+.tx-amount-val.out { color: var(--red); }
+.tx-amount-val.in  { color: var(--green); }
+.tx-usd { font-size: 11px; color: var(--text3); }
+.tx-hash { font-size: 10px; color: var(--text3); font-family: var(--mono); text-decoration: none; }
+.tx-hash:hover { color: var(--accent); }
+
+/* ─── Spam toggle (Zerion-style) ─── */
+.spam-toggle {
+  display: flex; align-items: center; gap: 7px;
+  cursor: pointer; user-select: none;
+}
+.spam-toggle input { display: none; }
+.spam-toggle-track {
+  width: 36px; height: 20px; border-radius: 10px;
+  background: var(--bg4); border: 1px solid var(--border2);
+  position: relative; transition: background 0.2s, border-color 0.2s;
+  flex-shrink: 0;
+}
+/* track styling handled via .on class (see JS) */
+.spam-toggle-thumb {
+  position: absolute; top: 2px; left: 2px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  transition: transform 0.2s;
+}
+/* JS updates .spam-toggle-track.on and .spam-toggle-thumb via updateSpamToggle() */
+.spam-toggle-track.on { background: var(--accent); border-color: var(--accent); }
+.spam-toggle-track.on .spam-toggle-thumb { transform: translateX(16px); }
+.spam-toggle-label {
+  font-size: 12px; font-weight: 500; color: var(--text2);
+  white-space: nowrap;
+}
+.spam-badge {
+  font-size: 10px; padding: 1px 5px; border-radius: 4px;
+  background: var(--yellow-bg); color: var(--yellow);
+  font-weight: 600; margin-left: 2px;
+}
+
+.tx-fake-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 10px; font-weight: 700; padding: 1px 6px;
+  border-radius: 4px; background: rgba(220,38,38,0.10);
+  color: var(--red); border: 1px solid rgba(220,38,38,0.25);
+  margin-left: 6px; vertical-align: middle;
+}
+
+/* ─── scrollbar ─── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ─── SIDEBAR ─── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon" style="background:linear-gradient(135deg,#16a34a,#22c55e);width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(22,163,74,0.3);font-size:15px;font-weight:800;color:white;letter-spacing:-0.05em">S</div>
+      <div class="logo-text" style="color:#0d1f14;font-size:17px;font-weight:800;letter-spacing:-0.04em">Strax<span style="color:var(--accent)">io</span></div>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-btn active" data-page="dashboard">
+        <span class="nav-icon">◈</span> Portfolio
+      </button>
+      <button class="nav-btn" data-page="settings">
+        <span class="nav-icon">⚙</span> Settings
+      </button>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="network-pills">
+        <div class="net-pill">
+          <div class="net-dot" style="background:var(--eth-color)"></div>
+          <span>Ethereum</span>
+        </div>
+        <div class="net-pill">
+          <div class="net-dot" style="background:var(--tron-color)"></div>
+          <span>Tron (TRC20)</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ─── MAIN ─── -->
+  <div class="main">
+
+    <!-- topbar -->
+    <div class="topbar">
+      <div class="topbar-title" id="page-title">Portfolio</div>
+      <div class="topbar-meta" id="last-update">—</div>
+      <div class="auto-refresh-wrap">
+        <select id="auto-refresh-select" onchange="setAutoRefresh(this.value)" title="Auto-refresh interval">
+          <option value="0">Manual</option>
+          <option value="60">1 min</option>
+          <option value="300">5 min</option>
+          <option value="900">15 min</option>
+        </select>
+      </div>
+      <button class="btn-refresh" onclick="refreshBalances()" id="refresh-btn">
+        <span class="refresh-icon">↻</span> Refresh
+      </button>
+    </div>
+
+    <!-- ═══ DASHBOARD ═══ -->
+    <div class="page active" id="page-dashboard">
+
+      <!-- hero -->
+      <div class="hero">
+        <div class="hero-label">Total Balance</div>
+        <div class="hero-value">
+          <span class="currency">$</span><span id="total-usd">0</span><span class="cents" id="total-cents">.00</span>
+        </div>
+        <div class="network-summary">
+          <div class="net-card">
+            <div class="net-card-dot" style="background:var(--eth-color)"></div>
+            <div class="net-card-info">
+              <div class="net-card-name">Ethereum</div>
+              <div class="net-card-val">$<span id="eth-usd">0.00</span></div>
+            </div>
+          </div>
+          <div class="net-card">
+            <div class="net-card-dot" style="background:var(--tron-color)"></div>
+            <div class="net-card-info">
+              <div class="net-card-name">Tron</div>
+              <div class="net-card-val">$<span id="tron-usd">0.00</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- view tabs -->
+      <div class="view-tabs">
+        <button class="view-tab active" onclick="switchView('wallets')">By Wallet</button>
+        <button class="view-tab" onclick="switchView('tokens')">By Token</button>
+        <button class="view-tab" onclick="switchView('history')">History</button>
+      </div>
+
+      <!-- By Wallets view -->
+      <div id="view-wallets">
+        <div class="wallets-list" id="balance-grid">
+          <div class="empty-state">
+            <div class="empty-icon">🔍</div>
+            <div class="empty-title">No wallets</div>
+            <div class="empty-sub">Add wallets in Settings to start monitoring</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- By Tokens view -->
+      <div id="view-tokens" style="display:none">
+        <div class="asset-rows" id="asset-rows">
+          <div class="empty-state">
+            <div class="empty-icon">📊</div>
+            <div class="empty-title">No data</div>
+            <div class="empty-sub">Refresh balances</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Token Detail view -->
+      <div id="view-token-detail" style="display:none">
+        <button class="detail-back" onclick="backFromDetail()">← Back</button>
+        <div id="token-detail-content"></div>
+      </div>
+
+      <!-- History view -->
+      <div id="view-history" style="display:none">
+        <!-- filters bar -->
+        <div class="history-filters">
+          <div class="history-filter-row">
+            <div class="filter-group">
+              <span class="filter-label">Type:</span>
+              <div class="filter-chips">
+                <button class="filter-chip active" data-type="all" onclick="setHistoryFilter(this,'type')">All</button>
+                <button class="filter-chip" data-type="send" onclick="setHistoryFilter(this,'type')">↑ Send</button>
+                <button class="filter-chip" data-type="receive" onclick="setHistoryFilter(this,'type')">↓ Receive</button>
+                <button class="filter-chip" data-type="trade" onclick="setHistoryFilter(this,'type')">⇄ Trade</button>
+              </div>
+            </div>
+            <div class="filter-group-sep"></div>
+            <div class="filter-group">
+              <span class="filter-label">Wallet:</span>
+              <div class="filter-chips" id="history-wallet-chips">
+                <button class="filter-chip active" data-wallet="all" onclick="setHistoryFilter(this,'wallet')">All</button>
+              </div>
+            </div>
+            <div class="filter-group-sep"></div>
+            <div class="filter-group">
+              <span class="filter-label">Period:</span>
+              <div class="filter-chips">
+                <button class="filter-chip active" data-period="30" onclick="setHistoryFilter(this,'period')">30d</button>
+                <button class="filter-chip" data-period="7" onclick="setHistoryFilter(this,'period')">7d</button>
+                <button class="filter-chip" data-period="90" onclick="setHistoryFilter(this,'period')">90d</button>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+            <label class="spam-toggle" title="Hide spam transactions (value ≤ $1)">
+              <input type="checkbox" id="hide-spam-check" checked onchange="updateSpamToggle()">
+              <span class="spam-toggle-track">
+                <span class="spam-toggle-thumb"></span>
+              </span>
+              <span class="spam-toggle-label">Hide Spam</span>
+            </label>
+            <button class="btn btn-ghost btn-sm" onclick="loadHistory()" id="history-load-btn">↻ Load</button>
+            <button class="btn btn-sm" onclick="exportHistoryCSV()" id="history-export-btn" style="display:none">↓ CSV</button>
+          </div>
+        </div>
+        <!-- stats row -->
+        <div class="history-stats" id="history-stats" style="display:none">
+          <div class="hstat">
+            <div class="hstat-label">Transactions</div>
+            <div class="hstat-val" id="hstat-count">0</div>
+          </div>
+          <div class="hstat">
+            <div class="hstat-label">Sent</div>
+            <div class="hstat-val hstat-red" id="hstat-out">$0</div>
+          </div>
+          <div class="hstat">
+            <div class="hstat-label">Received</div>
+            <div class="hstat-val hstat-green" id="hstat-in">$0</div>
+          </div>
+          <div class="hstat">
+            <div class="hstat-label">Net</div>
+            <div class="hstat-val" id="hstat-net">$0</div>
+          </div>
+        </div>
+        <!-- tx list -->
+        <div id="history-list">
+          <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <div class="empty-title">Transaction History</div>
+            <div class="empty-sub">Click Load to fetch transactions</div>
+          </div>
+        </div>
+        <!-- export log -->
+        <div class="log-panel" id="history-log-panel" style="display:none">
+          <div class="log-header"><span>Load Log</span></div>
+          <div class="log-body" id="history-log" style="max-height:120px"></div>
+        </div>
+      </div>
+
+      <!-- log -->
+      <div class="log-panel">
+        <div class="log-header">
+          <span>Log</span>
+          <span id="log-count" style="color:var(--text3);font-family:var(--mono)">0 entries</span>
+        </div>
+        <div class="log-body" id="dash-log"></div>
+      </div>
+    </div>
+
+    <!-- ═══ SETTINGS ═══ -->
+    <div class="page" id="page-settings">
+      <div class="settings-grid">
+
+        <!-- API Keys -->
+        <div class="card">
+          <div class="card-title">API Keys</div>
+          <div class="field">
+            <label>Etherscan API Key</label>
+            <input type="password" id="etherscan-key" placeholder="your key from etherscan.io">
+            <div class="hint">Get it free: <a href="https://etherscan.io/apis" target="_blank">etherscan.io/apis</a></div>
+          </div>
+          <div class="field">
+            <label>TronGrid API Key <span style="color:var(--red)">*</span></label>
+            <input type="password" id="tronscan-key" placeholder="your key from trongrid.io">
+            <div class="hint">Required for TRON. <a href="https://trongrid.io" target="_blank">trongrid.io</a> → Sign up → Create API Key</div>
+          </div>
+          <button class="btn" onclick="saveKeys()">Save Keys</button>
+        </div>
+
+        <!-- Add wallet -->
+        <div class="card">
+          <div class="card-title">Add Wallet</div>
+          <div class="field">
+            <label>Label</label>
+            <input type="text" id="wallet-label" placeholder="e.g. Main ETH">
+          </div>
+          <div class="field">
+            <label>Network</label>
+            <select id="wallet-network">
+              <option value="ethereum">Ethereum (ERC20)</option>
+              <option value="tron">Tron (TRC20)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Address</label>
+            <input type="text" id="wallet-address" placeholder="0x… or T…">
+          </div>
+          <button class="btn" onclick="addWallet()">+ Add</button>
+        </div>
+
+        <!-- Wallets list -->
+        <div class="card" style="grid-column: 1/-1">
+          <div class="card-title">Wallets</div>
+          <div class="wallet-list-settings" id="wallets-list">
+            <div style="color:var(--text3);font-size:13px">No wallets added</div>
+          </div>
+        </div>
+
+        <!-- Data management -->
+        <div class="card">
+          <div class="card-title">Data</div>
+          <div class="btn-row">
+            <button class="btn btn-ghost btn-sm" onclick="exportConfig()">↑ Export</button>
+            <button class="btn btn-ghost btn-sm" onclick="importConfig()">↓ Import</button>
+            <button class="btn btn-danger btn-sm" onclick="resetAll()">✕ Reset</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+/* ============================================================
+   Straxio — Wallet Monitor
+   ============================================================ */
+
+const STORAGE_KEY = 'walletMonitorState';
+const ETHERSCAN_V2_BASE = 'https://api.etherscan.io/v2/api';
+const ETH_CHAIN_ID = 1;
+const ETH_TOKENS = {
+  'USDT': { contract: '0xdac17f958d2ee523a2206206994597c13d831ec7', decimals: 6 },
+  'USDC': { contract: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', decimals: 6 }
+};
+const TRON_USDT_CONTRACT = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t';
+
+const DEFAULT_STATE = {
+  keys: { etherscan: '', tronscan: '' },
+  wallets: [],
+  lastBalances: null,
+  lastUpdate: null
+};
+
+let state = loadState();
+let priceCache = { ETH: null, TRX: null, USDT: 1, USDC: 1, ts: 0 };
+
+/* ─── Storage ─── */
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return structuredClone(DEFAULT_STATE);
+    return { ...structuredClone(DEFAULT_STATE), ...JSON.parse(raw) };
+  } catch { return structuredClone(DEFAULT_STATE); }
+}
+function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+/* ─── Navigation ─── */
+const pageTitles = { dashboard: 'Portfolio', settings: 'Settings' };
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const page = btn.dataset.page;
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + page).classList.add('active');
+    document.getElementById('page-title').textContent = pageTitles[page] || page;
+    const showRefresh = page === 'dashboard';
+    document.getElementById('refresh-btn').style.display = showRefresh ? '' : 'none';  });
+});
+
+/* ─── Toast ─── */
+function toast(msg, type = 'info') {
+  const c = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  c.appendChild(el);
+  setTimeout(() => el.remove(), 3100);
+}
+
+/* ─── Log ─── */
+function logTo(id, msg, type = '') {
+  const container = document.getElementById(id);
+  if (!container) return;
+  const now = new Date();
+  const t = now.toTimeString().slice(0, 8);
+  const el = document.createElement('div');
+  el.className = `log-entry ${type}`;
+  el.innerHTML = `<span class="log-time">${t}</span><span class="log-msg">${msg}</span>`;
+  container.appendChild(el);
+  container.scrollTop = container.scrollHeight;
+  // update count only for the main dash log
+  if (id === 'dash-log') {
+    const countEl = document.getElementById('log-count');
+    if (countEl) {
+      const n = container.querySelectorAll('.log-entry').length;
+      countEl.textContent = n + ' ' + (n === 1 ? 'entry' : 'entries');
+    }
+  }
+}
+function clearLog(id) {
+  const el = document.getElementById(id);
+  if (el) el.innerHTML = '';
+}
+
+/* ─── Settings ─── */
+function renderSettings() {
+  document.getElementById('etherscan-key').value = state.keys.etherscan || '';
+  document.getElementById('tronscan-key').value   = state.keys.tronscan  || '';
+  renderWallets();
+}
+function saveKeys() {
+  state.keys.etherscan = document.getElementById('etherscan-key').value.trim();
+  state.keys.tronscan  = document.getElementById('tronscan-key').value.trim();
+  saveState();
+  toast('Keys saved', 'ok');
+}
+function addWallet() {
+  const label   = document.getElementById('wallet-label').value.trim();
+  const network = document.getElementById('wallet-network').value;
+  const address = document.getElementById('wallet-address').value.trim();
+  if (!label || !address) return toast('Fill in all fields', 'err');
+  if (network === 'ethereum' && !/^0x[0-9a-fA-F]{40}$/.test(address))
+    return toast('Invalid Ethereum address', 'err');
+  if (network === 'tron' && !/^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(address))
+    return toast('Invalid Tron address', 'err');
+  if (state.wallets.find(w => w.address.toLowerCase() === address.toLowerCase()))
+    return toast('Wallet already added', 'err');
+  state.wallets.push({ label, network, address });
+  saveState();
+  renderWallets();
+  document.getElementById('wallet-label').value = '';
+  document.getElementById('wallet-address').value = '';
+  toast('Wallet added', 'ok');
+}
+function removeWallet(addr) {
+  state.wallets = state.wallets.filter(w => w.address !== addr);
+  if (state.lastBalances) state.lastBalances = state.lastBalances.filter(b => b.address !== addr);
+  saveState();
+  renderWallets();
+  renderBalances(state.lastBalances || []);
+  toast('Wallet removed');
+}
+function renderWallets() {
+  const el = document.getElementById('wallets-list');
+  if (!state.wallets.length) {
+    el.innerHTML = '<div style="color:var(--text3);font-size:13px">No wallets added</div>';
+    return;
+  }
+  el.innerHTML = state.wallets.map(w => `
+    <div class="wallet-item-settings">
+      <span class="net-tag ${w.network === 'ethereum' ? 'eth' : 'tron'}">${w.network === 'ethereum' ? 'ETH' : 'TRX'}</span>
+      <span class="wlabel">${escapeHtml(w.label)}</span>
+      <span class="waddr">${shortenAddr(w.address)}</span>
+      <button class="del-btn" onclick="removeWallet('${w.address}')" title="Remove">×</button>
+    </div>
+  `).join('');
+}
+function escapeHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function exportConfig() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'wallet-monitor-config.json';
+  a.click();
+}
+function importConfig() {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = '.json';
+  input.onchange = e => {
+    const fr = new FileReader();
+    fr.onload = ev => {
+      try {
+        const parsed = JSON.parse(ev.target.result);
+        state = { ...structuredClone(DEFAULT_STATE), ...parsed };
+        saveState();
+        renderSettings();
+        if (state.lastBalances) renderBalances(state.lastBalances);
+        toast('Config imported', 'ok');
+      } catch { toast('Failed to read file', 'err'); }
+    };
+    fr.readAsText(e.target.files[0]);
+  };
+  input.click();
+}
+function resetAll() {
+  if (!confirm('Reset all data?')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  state = structuredClone(DEFAULT_STATE);
+  renderSettings();
+  renderBalances([]);
+  toast('Data reset');
+}
+
+/* ─── API: Retry helper ─── */
+async function fetchWithRetry(fn, label, retries = 3, delay = 1200) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await fn();
+    } catch (e) {
+      const isRateLimit = e.message && (e.message.includes('rate limit') || e.message.includes('NOTOK') || e.message.includes('Max calls'));
+      if (isRateLimit && i < retries - 1) {
+        logTo('dash-log', `⏳ ${label}: rate limit, waiting ${delay}ms...`, 'warn');
+        await sleep(delay);
+        delay = Math.min(delay * 1.5, 4000);
+      } else {
+        throw e;
+      }
+    }
+  }
+}
+
+/* ─── API: Prices ─── */
+async function fetchPrices() {
+  if (Date.now() - priceCache.ts < 5 * 60 * 1000 && priceCache.ETH) return priceCache;
+  try {
+    const [rEth, rTrx] = await Promise.all([
+      fetch('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT'),
+      fetch('https://api.binance.com/api/v3/ticker/price?symbol=TRXUSDT')
+    ]);
+    const [jEth, jTrx] = await Promise.all([rEth.json(), rTrx.json()]);
+    priceCache.ETH = parseFloat(jEth.price) || 0;
+    priceCache.TRX = parseFloat(jTrx.price) || 0;
+    priceCache.ts = Date.now();
+    return priceCache;
+  } catch { /* fallback */ }
+  try {
+    const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum,tron&vs_currencies=usd');
+    const j = await r.json();
+    priceCache.ETH = j.ethereum?.usd || 0;
+    priceCache.TRX = j.tron?.usd || 0;
+    priceCache.ts = Date.now();
+  } catch (e) { logTo('dash-log', 'Failed to fetch prices: ' + e.message, 'warn'); }
+  return priceCache;
+}
+
+/* ─── API: Ethereum ─── */
+async function ethGetBalance(address) {
+  const key = state.keys.etherscan;
+  if (!key) throw new Error('Etherscan API key not set');
+  const url = `${ETHERSCAN_V2_BASE}?chainid=${ETH_CHAIN_ID}&module=account&action=balance&address=${address}&tag=latest&apikey=${key}`;
+  const r = await fetch(url);
+  const j = await r.json();
+  if (typeof j.result === 'string' && !isNaN(j.result)) return Number(j.result) / 1e18;
+  throw new Error(`Etherscan balance: status=${j.status} msg=${j.message} result=${j.result}`);
+}
+async function ethGetTokenBalance(address, contract, decimals) {
+  const key = state.keys.etherscan;
+  if (!key) return 0;
+  const url = `${ETHERSCAN_V2_BASE}?chainid=${ETH_CHAIN_ID}&module=account&action=tokenbalance&contractaddress=${contract}&address=${address}&tag=latest&apikey=${key}`;
+  try {
+    const r = await fetch(url);
+    const j = await r.json();
+    if (typeof j.result === 'string' && !isNaN(j.result)) return Number(j.result) / Math.pow(10, decimals);
+    if (j.result && typeof j.result === 'string') logTo('dash-log', 'tokenbalance warn: ' + j.result, 'warn');
+    return 0;
+  } catch (e) { logTo('dash-log', 'tokenbalance error: ' + e.message, 'err'); return 0; }
+}
+async function ethGetNormalTx(address, startTs, endTs) {
+  const key = state.keys.etherscan;
+  if (!key) return [];
+  const sb = Math.floor(startTs / 1000), eb = Math.floor(endTs / 1000);
+  const url = `${ETHERSCAN_V2_BASE}?chainid=${ETH_CHAIN_ID}&module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&sort=desc&apikey=${key}`;
+  const r = await fetch(url); const j = await r.json();
+  if (j.status !== '1' && !Array.isArray(j.result)) return [];
+  return (j.result || []).filter(tx => {
+    const ts = Number(tx.timeStamp);
+    return ts >= sb && ts <= eb;
+  });
+}
+async function ethGetTokenTx(address, startTs, endTs) {
+  const key = state.keys.etherscan;
+  if (!key) return [];
+  const url = `${ETHERSCAN_V2_BASE}?chainid=${ETH_CHAIN_ID}&module=account&action=tokentx&address=${address}&startblock=0&endblock=99999999&sort=desc&apikey=${key}`;
+  const r = await fetch(url); const j = await r.json();
+  if (j.status !== '1' && !Array.isArray(j.result)) return [];
+  const sb = Math.floor(startTs / 1000), eb = Math.floor(endTs / 1000);
+  return (j.result || []).filter(tx => {
+    const ts = Number(tx.timeStamp);
+    return ts >= sb && ts <= eb;
+  });
+}
+
+/* ─── API: Tron ─── */
+function tronHeaders() {
+  const h = { 'Accept': 'application/json', 'Content-Type': 'application/json' };
+  if (state.keys.tronscan) h['TRON-PRO-API-KEY'] = state.keys.tronscan;
+  return h;
+}
+function parseTronGridAccount(data) {
+  const trx = (data.balance || 0) / 1e6;
+  let usdt = 0;
+  if (data.trc20) {
+    for (const tokenObj of data.trc20) {
+      for (const [contract, amount] of Object.entries(tokenObj)) {
+        if (contract === TRON_USDT_CONTRACT) usdt = Number(amount) / 1e6;
+      }
+    }
+  }
+  return { trx, usdt };
+}
+async function tronGetAccount(address) {
+  if (!state.keys.tronscan) throw new Error('TronGrid API key not set. Get a free key at trongrid.io');
+  const r = await fetch('https://api.trongrid.io/v1/accounts/' + address, { headers: tronHeaders() });
+  if (!r.ok) throw new Error('TronGrid HTTP ' + r.status);
+  const j = await r.json();
+  if (!j.success) throw new Error('TronGrid: ' + (j.Error || JSON.stringify(j)).slice(0, 100));
+  if (!j.data || j.data.length === 0) return { trx: 0, usdt: 0 };
+  return parseTronGridAccount(j.data[0]);
+}
+async function tronGetTransactions(address, startTs, endTs) {
+  if (!state.keys.tronscan) return [];
+  const url = `https://api.trongrid.io/v1/accounts/${address}/transactions?limit=200&only_confirmed=true`;
+  const r = await fetch(url, { headers: tronHeaders() });
+  const j = await r.json();
+  if (!j.success || !j.data) return [];
+  return j.data.filter(tx => {
+    const ts = tx.block_timestamp;
+    return ts >= startTs && ts <= endTs;
+  });
+}
+async function tronGetTrc20Transactions(address, startTs, endTs) {
+  if (!state.keys.tronscan) return [];
+  const url = `https://api.trongrid.io/v1/accounts/${address}/transactions/trc20?limit=200&only_confirmed=true`;
+  const r = await fetch(url, { headers: tronHeaders() });
+  const j = await r.json();
+  if (!j.success || !j.data) return [];
+  return j.data.filter(tx => {
+    const ts = tx.block_timestamp;
+    return ts >= startTs && ts <= endTs;
+  });
+}
+
+/* ─── Balances ─── */
+async function refreshBalances() {
+  if (!state.wallets.length) { renderBalances([]); return; }
+  clearLog('dash-log');
+  logTo('dash-log', `Loading wallets...`);
+
+  const btn = document.getElementById('refresh-btn');
+  btn.classList.add('spinning');
+
+  document.getElementById('balance-grid').innerHTML = `
+    <div class="wallet-card" style="padding:20px">
+      <div class="skeleton" style="height:18px;width:40%;margin-bottom:10px"></div>
+      <div class="skeleton" style="height:14px;width:60%"></div>
+    </div>
+    <div class="wallet-card" style="padding:20px">
+      <div class="skeleton" style="height:18px;width:35%;margin-bottom:10px"></div>
+      <div class="skeleton" style="height:14px;width:55%"></div>
+    </div>`;
+
+  const prices = await fetchPrices();
+  if (prices.ETH) {
+    logTo('dash-log', `Prices: ETH=$${prices.ETH.toFixed(2)}, TRX=$${prices.TRX.toFixed(4)}`, 'ok');
+  } else {
+    logTo('dash-log', 'Prices unavailable — USD values will be 0', 'warn');
+  }
+
+  const results = [];
+  for (const w of state.wallets) {
+    try {
+      if (w.network === 'ethereum') {
+        const eth  = await fetchWithRetry(() => ethGetBalance(w.address), w.label);
+        await sleep(400);
+        const usdt = await fetchWithRetry(() => ethGetTokenBalance(w.address, ETH_TOKENS.USDT.contract, ETH_TOKENS.USDT.decimals), w.label + ' USDT');
+        await sleep(400);
+        const usdc = await fetchWithRetry(() => ethGetTokenBalance(w.address, ETH_TOKENS.USDC.contract, ETH_TOKENS.USDC.decimals), w.label + ' USDC');
+        const usd = eth * (prices.ETH || 0) + usdt + usdc;
+        results.push({ ...w, balances: { ETH: eth, USDT: usdt, USDC: usdc }, usd });
+        logTo('dash-log', `✓ ${w.label}: ${eth.toFixed(4)} ETH, ${usdt.toFixed(2)} USDT, ${usdc.toFixed(2)} USDC`, 'ok');
+      } else if (w.network === 'tron') {
+        const { trx, usdt } = await tronGetAccount(w.address);
+        const usd = trx * (prices.TRX || 0) + usdt;
+        results.push({ ...w, balances: { TRX: trx, USDT: usdt }, usd });
+        logTo('dash-log', `✓ ${w.label}: ${trx.toFixed(2)} TRX, ${usdt.toFixed(2)} USDT`, 'ok');
+      }
+    } catch (e) {
+      results.push({ ...w, balances: {}, usd: 0, error: e.message });
+      logTo('dash-log', `✗ ${w.label}: ${e.message}`, 'err');
+    }
+    await sleep(500); // pause between wallets
+  }
+
+  state.lastBalances = results;
+  state.lastUpdate = new Date().toISOString();
+  saveState();
+  renderBalances(results);
+  if (currentView === 'tokens') renderAssetsByToken(results);
+  btn.classList.remove('spinning');
+}
+
+function renderBalances(results) {
+  const grid = document.getElementById('balance-grid');
+  const totalUsdEl    = document.getElementById('total-usd');
+  const totalCentsEl  = document.getElementById('total-cents');
+  const ethUsdEl      = document.getElementById('eth-usd');
+  const tronUsdEl     = document.getElementById('tron-usd');
+  const lastUpdateEl  = document.getElementById('last-update');
+
+  if (!results || !results.length) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <div class="empty-title">No wallets</div>
+        <div class="empty-sub">Add wallets in Settings to start monitoring</div>
+      </div>`;
+    totalUsdEl.textContent = '0'; totalCentsEl.textContent = '.00';
+    ethUsdEl.textContent = '0.00'; tronUsdEl.textContent = '0.00';
+    updateLastUpdateDisplay();
+    return;
+  }
+
+  const total  = results.reduce((a, b) => a + (b.usd || 0), 0);
+  const ethSum = results.filter(r => r.network === 'ethereum').reduce((a, b) => a + (b.usd || 0), 0);
+  const trnSum = results.filter(r => r.network === 'tron').reduce((a, b) => a + (b.usd || 0), 0);
+
+  const [intPart, decPart] = total.toFixed(2).split('.');
+  totalUsdEl.textContent  = Number(intPart).toLocaleString('en');
+  totalCentsEl.textContent = '.' + decPart;
+  ethUsdEl.textContent  = fmt(ethSum);
+  tronUsdEl.textContent = fmt(trnSum);
+
+  updateLastUpdateDisplay();
+
+
+  grid.innerHTML = results.map((w, idx) => {
+    const isEth  = w.network === 'ethereum';
+    const netColor = isEth ? 'var(--eth-color)' : 'var(--tron-color)';
+    const netEmoji = isEth ? '⟠' : '🔴';
+    const netLabel = isEth ? 'Ethereum' : 'Tron';
+
+    let tokensHtml = '';
+    if (w.error) {
+      tokensHtml = `<div style="font-size:13px;color:var(--red);padding:8px 12px">⚠ ${escapeHtml(w.error)}</div>`;
+    } else if (w.balances) {
+      const rows = [];
+      if (isEth) {
+        if (w.balances.ETH !== undefined) rows.push({ sym:'ETH', icon:'⟠', cls:'tok-eth', net:'Ethereum', bal: w.balances.ETH, usd: w.balances.ETH * (priceCache.ETH||0), fmt4:true });
+        if (w.balances.USDT !== undefined) rows.push({ sym:'USDT', icon:'₮', cls:'tok-usdt', net:'ERC20', bal: w.balances.USDT, usd: w.balances.USDT });
+        if (w.balances.USDC !== undefined) rows.push({ sym:'USDC', icon:'$', cls:'tok-usdc', net:'ERC20', bal: w.balances.USDC, usd: w.balances.USDC });
+      } else {
+        if (w.balances.TRX  !== undefined) rows.push({ sym:'TRX', icon:'◈', cls:'tok-trx', net:'Tron', bal: w.balances.TRX, usd: w.balances.TRX * (priceCache.TRX||0), fmt4:true });
+        if (w.balances.USDT !== undefined) rows.push({ sym:'USDT', icon:'₮', cls:'tok-usdt', net:'TRC20', bal: w.balances.USDT, usd: w.balances.USDT });
+      }
+      tokensHtml = `<div class="token-list">${rows.map(t => `
+        <div class="token-row" onclick="openTokenDetail('${t.sym}')" style="cursor:pointer" title="Details for ${t.sym}">
+          <div class="token-icon ${t.cls}">${t.icon}</div>
+          <div class="token-name">
+            <div class="token-symbol">${t.sym}</div>
+            <div class="token-network">${t.net}</div>
+          </div>
+          <div class="token-amount">
+            <div class="token-bal">${t.fmt4 ? formatAmount(t.bal, 4) : formatAmount(t.bal, 2)}</div>
+            <div class="token-usd">$${fmt(t.usd)}</div>
+          </div>
+          <div style="color:var(--text3);font-size:12px;margin-left:4px">›</div>
+        </div>`).join('')}</div>`;
+    }
+
+    return `
+      <div class="wallet-card" id="wcard-${idx}">
+        <div class="wallet-card-header" onclick="toggleCard(${idx})">
+          <div class="wallet-avatar" style="background:rgba(${isEth?'98,126,234':'239,0,39'},0.12)">
+            <span style="font-size:20px">${netEmoji}</span>
+            <div class="net-badge" style="background:${netColor}">·</div>
+          </div>
+          <div class="wallet-info">
+            <div class="wallet-label">${escapeHtml(w.label)}</div>
+            <div class="wallet-addr">${shortenAddr(w.address)}</div>
+          </div>
+          <div>
+            <div class="wallet-usd">$${fmt(w.usd)}</div>
+            <div class="wallet-usd-sub">${netLabel}</div>
+          </div>
+        </div>
+        <div class="wallet-tokens">${tokensHtml}</div>
+      </div>`;
+  }).join('');
+}
+
+function toggleCard(idx) {
+  document.getElementById('wcard-' + idx)?.classList.toggle('expanded');
+}
+
+/* ─── Format helpers ─── */
+function fmt(n) {
+  if (n === null || n === undefined || isNaN(n)) return '0.00';
+  return n.toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function formatAmount(n, digits = 4) {
+  if (n === null || n === undefined || isNaN(n)) return '0';
+  if (n < 0.0001) return n.toExponential(2);
+  return n.toLocaleString('en', { minimumFractionDigits: 0, maximumFractionDigits: digits });
+}
+function shortenAddr(addr) {
+  if (!addr) return '';
+  return addr.slice(0, 6) + '…' + addr.slice(-4);
+}
+
+/* ─── CSV escape helper ─── */
+function csvEscape(v) {
+  const s = String(v ?? '');
+  return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s.replace(/"/g,'""')}"` : s;
+}
+
+/* ─── Tron address utils ─── */
+async function sha256(data) {
+  const buf = data instanceof Uint8Array ? data : new Uint8Array(data);
+  const hash = await crypto.subtle.digest('SHA-256', buf);
+  return Array.from(new Uint8Array(hash));
+}
+async function tronFromHex(hex) {
+  if (!hex) return '';
+  if (hex.startsWith('T')) return hex;
+  try {
+    const bytes = hexToBytes(hex);
+    const hash1 = await sha256(bytes);
+    const hash2 = await sha256(hash1);
+    const checksum = hash2.slice(0, 4);
+    const full = [...bytes, ...checksum];
+    return base58encode(full);
+  } catch { return hex; }
+}
+function hexFromTron(addr) {
+  if (!addr || !addr.startsWith('T')) return addr || '';
+  try {
+    const bytes = base58decode(addr);
+    return bytesToHex(bytes.slice(0, bytes.length - 4));
+  } catch { return addr; }
+}
+function hexToBytes(hex) {
+  const r = [];
+  for (let i = 0; i < hex.length; i += 2) r.push(parseInt(hex.slice(i, i+2), 16));
+  return r;
+}
+function bytesToHex(bytes) { return bytes.map(b => b.toString(16).padStart(2,'0')).join(''); }
+const B58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+function base58encode(bytes) {
+  let n = 0n;
+  for (const b of bytes) n = n * 256n + BigInt(b);
+  let out = '';
+  while (n > 0n) { out = B58[Number(n % 58n)] + out; n /= 58n; }
+  for (const b of bytes) { if (b === 0) out = '1' + out; else break; }
+  return out;
+}
+function base58decode(str) {
+  let n = 0n;
+  for (const c of str) { const i = B58.indexOf(c); if (i < 0) throw new Error('bad b58'); n = n * 58n + BigInt(i); }
+  const bytes = [];
+  while (n > 0n) { bytes.unshift(Number(n % 256n)); n /= 256n; }
+  for (const c of str) { if (c === '1') bytes.unshift(0); else break; }
+  return bytes;
+}
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+/* ─── View switching ─── */
+let currentView = 'wallets'; // 'wallets' | 'tokens' | 'detail'
+let prevView = 'wallets';
+
+function switchView(view) {
+  currentView = view;
+  document.getElementById('view-wallets').style.display       = view === 'wallets'  ? '' : 'none';
+  document.getElementById('view-tokens').style.display        = view === 'tokens'   ? '' : 'none';
+  document.getElementById('view-token-detail').style.display  = view === 'detail'   ? '' : 'none';
+  document.getElementById('view-history').style.display       = view === 'history'  ? '' : 'none';
+  document.querySelectorAll('.view-tab').forEach((btn, i) => {
+    btn.classList.toggle('active',
+      (i === 0 && view === 'wallets') ||
+      (i === 1 && view === 'tokens')  ||
+      (i === 2 && view === 'history')
+    );
+  });
+  if (view === 'tokens'  && state.lastBalances?.length) renderAssetsByToken(state.lastBalances);
+  if (view === 'history') renderHistoryWalletChips();
+}
+
+function renderAssetsByToken(results) {
+  const el = document.getElementById('asset-rows');
+  if (!results || !results.length) return;
+
+  // Aggregate balances per symbol
+  const tokens = {}; // sym -> { sym, icon, cls, wallets: [{label,addr,bal,usd,network}], totalBal, totalUsd }
+
+  const TOK_META = {
+    ETH:  { icon:'⟠', cls:'tok-eth',  price: () => priceCache.ETH||0, decimals: 4 },
+    TRX:  { icon:'◈', cls:'tok-trx',  price: () => priceCache.TRX||0, decimals: 2 },
+    USDT: { icon:'₮', cls:'tok-usdt', price: () => 1, decimals: 2 },
+    USDC: { icon:'$', cls:'tok-usdc', price: () => 1, decimals: 2 },
+  };
+
+  for (const w of results) {
+    if (!w.balances) continue;
+    for (const [sym, bal] of Object.entries(w.balances)) {
+      if (!bal && bal !== 0) continue;
+      const meta = TOK_META[sym] || { icon:'?', cls:'', price: ()=>0, decimals:2 };
+      const usd  = sym === 'ETH' ? bal * (priceCache.ETH||0)
+                 : sym === 'TRX' ? bal * (priceCache.TRX||0)
+                 : bal;
+      const netLabel = w.network === 'ethereum'
+        ? (sym === 'ETH' ? 'Ethereum' : 'ERC20')
+        : (sym === 'TRX' ? 'Tron' : 'TRC20');
+
+      if (!tokens[sym]) tokens[sym] = { sym, ...meta, wallets: [], totalBal: 0, totalUsd: 0 };
+      tokens[sym].wallets.push({ label: w.label, address: w.address, network: w.network, netLabel, bal, usd });
+      tokens[sym].totalBal += bal;
+      tokens[sym].totalUsd += usd;
+    }
+  }
+
+  // Sort by USD desc
+  const sorted = Object.values(tokens).sort((a, b) => b.totalUsd - a.totalUsd);
+  if (!sorted.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-title">No data</div></div>'; return; }
+
+  el.innerHTML = sorted.map(t => {
+    const walletCount = t.wallets.length;
+    const netLabels = [...new Set(t.wallets.map(w => w.netLabel))].join(', ');
+    return `
+      <div class="asset-row" onclick="openTokenDetail('${t.sym}')">
+        <div class="asset-row-icon ${t.cls}">${t.icon}</div>
+        <div class="asset-row-info">
+          <div class="asset-row-name">${t.sym}</div>
+          <div class="asset-row-sub">${netLabels} · ${walletCount} ${walletCount===1?'wallet':'wallets'}</div>
+        </div>
+        <div class="asset-row-right">
+          <div class="asset-row-usd">$${fmt(t.totalUsd)}</div>
+          <div class="asset-row-bal">${formatAmount(t.totalBal, t.decimals)} ${t.sym}</div>
+        </div>
+        <div class="asset-row-chevron">›</div>
+      </div>`;
+  }).join('');
+}
+
+function openTokenDetail(sym) {
+  const results = state.lastBalances;
+  if (!results) return;
+  prevView = currentView;
+
+  const TOK_META = {
+    ETH:  { icon:'⟠', cls:'tok-eth',  decimals: 4, netAvatar: '⟠', netBg:'rgba(98,126,234,0.15)' },
+    TRX:  { icon:'◈', cls:'tok-trx',  decimals: 2, netAvatar: '◈', netBg:'rgba(239,0,39,0.12)' },
+    USDT: { icon:'₮', cls:'tok-usdt', decimals: 2, netAvatar: '₮', netBg:'rgba(38,161,123,0.15)' },
+    USDC: { icon:'$', cls:'tok-usdc', decimals: 2, netAvatar: '$', netBg:'rgba(39,117,202,0.15)' },
+  };
+  const meta = TOK_META[sym] || { icon:'?', cls:'', decimals:2, netBg:'var(--bg3)' };
+
+  // Collect wallets that hold this token
+  const wallets = [];
+  for (const w of results) {
+    if (!w.balances || w.balances[sym] === undefined) continue;
+    const bal = w.balances[sym];
+    const usd = sym === 'ETH' ? bal * (priceCache.ETH||0)
+              : sym === 'TRX' ? bal * (priceCache.TRX||0)
+              : bal;
+    const netLabel = w.network === 'ethereum'
+      ? (sym === 'ETH' ? 'Ethereum' : 'ERC20')
+      : (sym === 'TRX' ? 'Tron' : 'TRC20');
+    wallets.push({ ...w, bal, usd, netLabel });
+  }
+  wallets.sort((a, b) => b.usd - a.usd);
+
+  const totalBal = wallets.reduce((s, w) => s + w.bal, 0);
+  const totalUsd = wallets.reduce((s, w) => s + w.usd, 0);
+  const netNames = [...new Set(wallets.map(w => w.netLabel))].join(' · ');
+
+  const byWalletHtml = wallets.map(w => {
+    const pct = totalUsd > 0 ? (w.usd / totalUsd * 100) : 0;
+    const netEmoji = w.network === 'ethereum' ? '⟠' : '◈';
+    const netBg    = w.network === 'ethereum' ? 'rgba(98,126,234,0.12)' : 'rgba(239,0,39,0.10)';
+    return `
+      <div class="detail-wallet-row">
+        <div class="detail-wallet-avatar" style="background:${netBg}">${netEmoji}</div>
+        <div class="detail-wallet-info">
+          <div class="detail-wallet-label">${escapeHtml(w.label)}</div>
+          <div class="detail-wallet-addr">${shortenAddr(w.address)} · ${w.netLabel}</div>
+        </div>
+        <div class="detail-wallet-pct">
+          <div style="font-size:11px;color:var(--text3);text-align:right">${pct.toFixed(1)}%</div>
+          <div class="detail-pct-bar-bg">
+            <div class="detail-pct-bar" style="width:${pct}%;background:var(--accent)"></div>
+          </div>
+        </div>
+        <div class="detail-wallet-amount">
+          <div class="detail-wallet-bal">${formatAmount(w.bal, meta.decimals)}</div>
+          <div class="detail-wallet-usd">$${fmt(w.usd)}</div>
+        </div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('token-detail-content').innerHTML = `
+    <div class="detail-hero">
+      <div class="detail-icon ${meta.cls}">${meta.icon}</div>
+      <div>
+        <div class="detail-title">$${Number(totalUsd.toFixed(2)).toLocaleString('en', {minimumFractionDigits:0, maximumFractionDigits:0})}<span>.${totalUsd.toFixed(2).split('.')[1]}</span></div>
+        <div class="detail-sub">${formatAmount(totalBal, meta.decimals)} ${sym} · ${netNames}</div>
+      </div>
+    </div>
+    <div class="section-header" style="margin-bottom:10px">
+      <div class="section-title">By Wallet</div>
+    </div>
+    <div class="detail-by-wallet">${byWalletHtml}</div>`;
+
+  // show detail panel via switchView so all views are properly hidden
+  switchView('detail');
+}
+
+function backFromDetail() {
+  switchView(prevView || 'tokens');
+}
+
+/* ─── Spam toggle visual sync ─── */
+function updateSpamToggle() {
+  const cb = document.getElementById('hide-spam-check');
+  const track = cb?.nextElementSibling;
+  if (!track) return;
+  track.classList.toggle('on', cb.checked);
+  renderHistoryList();
+}
+// init on load
+document.addEventListener('DOMContentLoaded', () => {
+  const cb = document.getElementById('hide-spam-check');
+  if (cb) { cb.onchange = updateSpamToggle; updateSpamToggle(); }
+});
+
+/* ─── HISTORY ─── */
+let historyState = {
+  txs: [],          // all loaded txs
+  filterType:   'all',
+  filterWallet: 'all',
+  filterPeriod: 30
+};
+
+function renderHistoryWalletChips() {
+  const el = document.getElementById('history-wallet-chips');
+  if (!el) return;
+  const wallets = state.wallets;
+  el.innerHTML = `<button class="filter-chip ${historyState.filterWallet==='all'?'active':''}" data-wallet="all" onclick="setHistoryFilter(this,'wallet')">All</button>` +
+    wallets.map(w => `<button class="filter-chip ${historyState.filterWallet===w.address?'active':''}" data-wallet="${w.address}" onclick="setHistoryFilter(this,'wallet')">${escapeHtml(w.label)}</button>`).join('');
+}
+
+function setHistoryFilter(btn, kind) {
+  btn.closest('.filter-chips').querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (kind === 'type')   { historyState.filterType   = btn.dataset.type;   renderHistoryList(); }
+  if (kind === 'wallet') { historyState.filterWallet = btn.dataset.wallet;  renderHistoryList(); }
+  if (kind === 'period') {
+    historyState.filterPeriod = Number(btn.dataset.period);
+    // Period change needs a fresh API load — auto-load if we already have data
+    if (historyState.txs.length) loadHistory();
+    else renderHistoryList();
+  }
+}
+
+/* token symbol → USD price cache (for history spam filter) */
+let tokenPriceCache = {}; // symbol → price (0 = worthless/unknown)
+
+/* CoinGecko simple price lookup by symbol list */
+async function fetchTokenPrices(symbols) {
+  // Map common symbols to CoinGecko IDs
+  const KNOWN_IDS = {
+    ETH:'ethereum', BTC:'bitcoin', TRX:'tron', USDT:'tether', USDC:'usd-coin',
+    USDC_E:'usd-coin', WETH:'weth', WBTC:'wrapped-bitcoin', BNB:'binancecoin',
+    MATIC:'matic-network', LINK:'chainlink', UNI:'uniswap', AAVE:'aave',
+    SHIB:'shiba-inu', PEPE:'pepe', DOGE:'dogecoin', SOL:'solana',
+    ARB:'arbitrum', OP:'optimism', LDO:'lido-dao', MKR:'maker',
+    CRV:'curve-dao-token', SUSHI:'sushi', COMP:'compound-governance-token',
+  };
+
+  const toFetch = symbols.map(s => s.toUpperCase()).filter(s => !(s in tokenPriceCache));
+  if (!toFetch.length) return;
+
+  const ids = [...new Set(toFetch.map(s => KNOWN_IDS[s]).filter(Boolean))];
+  // Mark all symbols not in KNOWN_IDS as 0 immediately
+  toFetch.forEach(s => { if (!KNOWN_IDS[s]) tokenPriceCache[s] = 0; });
+  if (!ids.length) return;
+
+  try {
+    const r = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids.join(',')}&vs_currencies=usd`);
+    const j = await r.json();
+    const idToPrice = {};
+    for (const [id, val] of Object.entries(j)) idToPrice[id] = val.usd || 0;
+    for (const s of toFetch) {
+      const id = KNOWN_IDS[s];
+      if (id) tokenPriceCache[s] = idToPrice[id] ?? 0;
+    }
+    // sync ETH/TRX into main priceCache
+    if (idToPrice['ethereum']) priceCache.ETH = idToPrice['ethereum'];
+    if (idToPrice['tron'])     priceCache.TRX = idToPrice['tron'];
+  } catch {
+    toFetch.forEach(s => { if (!(s in tokenPriceCache)) tokenPriceCache[s] = 0; });
+  }
+}
+
+/* ─── Legitimate contract whitelist (Ethereum + Tron) ─── */
+const LEGIT_CONTRACTS = new Set([
+  // Ethereum ERC20 — lowercase
+  '0xdac17f958d2ee523a2206206994597c13d831ec7', // USDT
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', // USDC (native)
+  '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913', // USDC (Base) - in case
+  '0x2791bca1f2de4661ed88a30c99a7a9449aa84174', // USDC (Polygon)
+  '0xaf88d065e77c8cc2239327c5edb3a432268e5831', // USDC (Arbitrum)
+  '0x6b175474e89094c44da98b954eedeac495271d0f', // DAI
+  '0x4fabb145d64652a948d72533023f6e7a623c7c53', // BUSD
+  '0x956f47f50a910163d8bf957cf5846d573e7f87ca', // FEI
+  '0x853d955acef822db058eb8505911ed77f175b99e', // FRAX
+  '0x5f98805a4e8be255a32880fdec7f6728c6568ba0', // LUSD
+  '0xd533a949740bb3306d119cc777fa900ba034cd52', // CRV
+  '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', // WETH
+  '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', // WBTC
+  '0x514910771af9ca656af840dff83e8264ecf986ca', // LINK
+  '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984', // UNI
+  '0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9', // AAVE
+  '0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce', // SHIB
+  '0x6982508145454ce325ddbe47a25d4ec3d2311933', // PEPE
+  // Tron TRC20 — Tron addresses
+  'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',         // USDT (TRC20)
+  'TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8',          // USDC (TRC20)
+]);
+
+/* Stablecoin symbols that MUST match a legit contract to be trusted */
+const STABLE_SYMBOLS = new Set(['USDT','USDC','USDC_E','DAI','BUSD','TUSD','FRAX','LUSD','CRVUSD','PYUSD','FDUSD','USDP','GUSD']);
+
+/* Check if a tx is a fake/phishing token impersonating a stablecoin */
+function isFakeStable(sym, contractAddress) {
+  if (!STABLE_SYMBOLS.has(sym.toUpperCase())) return false; // not a stablecoin name → not fake
+  if (!contractAddress) return false; // no contract (native coin) → not fake
+  return !LEGIT_CONTRACTS.has(contractAddress.toLowerCase());
+}
+
+/* Get USD price for any token symbol, contract-aware */
+function tokenUsd(sym, amount, contractAddress) {
+  if (isFakeStable(sym, contractAddress)) return 0;
+  const s = (sym || '').toUpperCase();
+  if (STABLE_SYMBOLS.has(s)) return amount;
+  if (s === 'ETH') return amount * (priceCache.ETH || 0);
+  if (s === 'TRX') return amount * (priceCache.TRX || 0);
+  const p = tokenPriceCache[s];
+  if (p === undefined) return null; // price not yet fetched
+  return amount * p;
+}
+
+async function loadHistory() {
+  if (!state.wallets.length) return toast('No wallets', 'err');
+  const btn = document.getElementById('history-load-btn');
+  btn.disabled = true; btn.textContent = '↻ Loading...';
+  const logPanel = document.getElementById('history-log-panel');
+  logPanel.style.display = '';
+  clearLog('history-log');
+
+  const days     = historyState.filterPeriod;
+  const endTs    = Date.now();
+  const startTs  = endTs - days * 86400000;
+  const allTxs   = [];
+
+  const walletsToLoad = historyState.filterWallet === 'all'
+    ? state.wallets
+    : state.wallets.filter(w => w.address === historyState.filterWallet);
+
+  for (const w of walletsToLoad) {
+    logTo('history-log', `Loading ${w.label}...`);
+    try {
+      if (w.network === 'ethereum') {
+        if (!state.keys.etherscan) { logTo('history-log', `✗ ${w.label}: no Etherscan key`, 'err'); continue; }
+        const txs  = await ethGetNormalTx(w.address, startTs, endTs);
+        const ttxs = await ethGetTokenTx(w.address, startTs, endTs);
+        for (const tx of txs) {
+          const dir = tx.from.toLowerCase() === w.address.toLowerCase() ? 'send' : 'receive';
+          allTxs.push({
+            date: Number(tx.timeStamp) * 1000,
+            type: dir, wallet: w.label, walletAddr: w.address,
+            asset: 'ETH', amount: Number(tx.value) / 1e18,
+            from: tx.from, to: tx.to, hash: tx.hash, network: 'ethereum'
+          });
+        }
+        for (const tx of ttxs) {
+          const dir = tx.from.toLowerCase() === w.address.toLowerCase() ? 'send' : 'receive';
+          const dec = Number(tx.tokenDecimal) || 18;
+          allTxs.push({
+            date: Number(tx.timeStamp) * 1000,
+            type: dir, wallet: w.label, walletAddr: w.address,
+            asset: tx.tokenSymbol, amount: Number(tx.value) / Math.pow(10, dec),
+            contractAddress: tx.contractAddress,
+            from: tx.from, to: tx.to, hash: tx.hash, network: 'ethereum'
+          });
+        }
+        logTo('history-log', `✓ ${w.label}: ${txs.length + ttxs.length} txs`, 'ok');
+      } else if (w.network === 'tron') {
+        if (!state.keys.tronscan) { logTo('history-log', `✗ ${w.label}: no TronGrid key`, 'err'); continue; }
+        const txs  = await tronGetTransactions(w.address, startTs, endTs);
+        const ttxs = await tronGetTrc20Transactions(w.address, startTs, endTs);
+        for (const tx of txs) {
+          const c   = tx.raw_data?.contract?.[0];
+          if (!c || c.type !== 'TransferContract') continue;
+          const val = c.parameter?.value;
+          if (!val) continue;
+          const dir = val.owner_address === hexFromTron(w.address) ? 'send' : 'receive';
+          allTxs.push({
+            date: tx.block_timestamp, type: dir, wallet: w.label, walletAddr: w.address,
+            asset: 'TRX', amount: val.amount / 1e6,
+            from: await tronFromHex(val.owner_address), to: await tronFromHex(val.to_address),
+            hash: tx.txID, network: 'tron'
+          });
+        }
+        for (const tx of ttxs) {
+          const dir = tx.from === w.address ? 'send' : 'receive';
+          const dec = Number(tx.token_info?.decimals) || 6;
+          allTxs.push({
+            date: tx.block_timestamp, type: dir, wallet: w.label, walletAddr: w.address,
+            asset: tx.token_info?.symbol || 'TRC20', amount: Number(tx.value) / Math.pow(10, dec),
+            contractAddress: tx.token_info?.address || tx.contract_address,
+            from: tx.from, to: tx.to, hash: tx.transaction_id, network: 'tron'
+          });
+        }
+        logTo('history-log', `✓ ${w.label}: ${txs.length + ttxs.length} txs`, 'ok');
+      }
+    } catch(e) { logTo('history-log', `✗ ${w.label}: ${e.message}`, 'err'); }
+    await sleep(400);
+  }
+
+  historyState.txs = allTxs.sort((a, b) => b.date - a.date);
+
+  // Fetch prices for all unique token symbols found
+  const uniqueSymbols = [...new Set(allTxs.map(t => (t.asset||'').toUpperCase()))];
+  logTo('history-log', `Fetching prices for ${uniqueSymbols.length} tokens...`);
+  await fetchTokenPrices(uniqueSymbols);
+  logTo('history-log', `Prices loaded. Rendering...`, 'ok');
+
+  renderHistoryList();
+  btn.disabled = false; btn.textContent = '↻ Load';
+  document.getElementById('history-export-btn').style.display = allTxs.length ? '' : 'none';
+}
+
+function renderHistoryList() {
+  const { txs, filterType, filterWallet } = historyState;
+  const hideSpam = document.getElementById('hide-spam-check')?.checked ?? true;
+
+  let filtered = txs;
+  if (filterType   !== 'all')    filtered = filtered.filter(t => t.type === filterType);
+  if (filterWallet !== 'all')    filtered = filtered.filter(t => t.walletAddr === filterWallet);
+
+  // Spam filter: remove txs with USD value ≤ $1 OR with unknown/zero-value tokens
+  let spamCount = 0;
+  if (hideSpam) {
+    const SPAM_THRESHOLD_USD = 1.00;
+    const before = filtered.length;
+    filtered = filtered.filter(t => {
+      const usd = tokenUsd(t.asset, t.amount, t.contractAddress);
+      // null = price not loaded (treat as spam); 0 = worthless token (spam); ≤ threshold = dust
+      if (usd === null) return false; // price unknown → spam
+      return usd > SPAM_THRESHOLD_USD;
+    });
+    spamCount = before - filtered.length;
+  }
+
+  const el = document.getElementById('history-list');
+  const statsEl = document.getElementById('history-stats');
+
+  if (!filtered.length) {
+    const spamNote = hideSpam && spamCount > 0 ? ` (${spamCount} spam hidden)` : '';
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">${txs.length ? '🔍' : '📋'}</div><div class="empty-title">${txs.length ? 'No transactions match the filter' : 'Transaction History'}</div><div class="empty-sub">${txs.length ? 'Try different filters' + spamNote : 'Click Load to start'}</div></div>`;
+    statsEl.style.display = 'none';
+    return;
+  }
+
+  // compute stats
+  let outUsd = 0, inUsd = 0;
+  for (const t of filtered) {
+    const usd = tokenUsd(t.asset, t.amount, t.contractAddress) ?? 0;
+    if (t.type === 'send')    outUsd += usd;
+    if (t.type === 'receive') inUsd  += usd;
+  }
+  const net = inUsd - outUsd;
+  document.getElementById('hstat-count').innerHTML = filtered.length +
+    (spamCount > 0 && hideSpam ? ` <span class="spam-badge">+${spamCount} spam</span>` : '');
+  document.getElementById('hstat-out').textContent   = '-$' + fmt(outUsd);
+  document.getElementById('hstat-in').textContent    = '+$' + fmt(inUsd);
+  const netEl = document.getElementById('hstat-net');
+  netEl.textContent = (net >= 0 ? '+' : '') + '$' + fmt(Math.abs(net));
+  netEl.className = 'hstat-val ' + (net >= 0 ? 'hstat-green' : 'hstat-red');
+  statsEl.style.display = '';
+
+  const EXPLORER_ETH  = 'https://etherscan.io/tx/';
+  const EXPLORER_TRON = 'https://tronscan.org/#/transaction/';
+
+  el.innerHTML = `<div class="tx-list">${filtered.map(t => {
+    const isSend = t.type === 'send';
+    const icon   = isSend ? '↑' : '↓';
+    const label  = isSend ? 'Send' : 'Receive';
+    const cls    = isSend ? 'send' : 'receive';
+    const amtCls = isSend ? 'out' : 'in';
+    const sign   = isSend ? '-' : '+';
+    const isFake = isFakeStable(t.asset, t.contractAddress);
+    const usd    = tokenUsd(t.asset, t.amount, t.contractAddress) ?? 0;
+    const d      = new Date(t.date);
+    const dateStr= d.toLocaleDateString('en-GB') + ' ' + d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    const counterpart = isSend ? t.to : t.from;
+    const explorerBase = t.network === 'tron' ? EXPLORER_TRON : EXPLORER_ETH;
+    const shortHash = t.hash ? (t.hash.slice(0,8)+'…'+t.hash.slice(-6)) : '';
+    return `
+      <div class="tx-row">
+        <div class="tx-icon ${cls}">${icon}</div>
+        <div class="tx-info">
+          <div class="tx-type">${label} · <span class="tx-wallet">${escapeHtml(t.wallet)}</span>${isFake ? '<span class="tx-fake-badge">⚠ FAKE</span>' : ''}</div>
+          <div class="tx-meta">${dateStr} · ${counterpart ? shortenAddr(counterpart) : ''}</div>
+        </div>
+        <div class="tx-amount">
+          <div class="tx-amount-val ${amtCls}">${sign}${formatAmount(t.amount, 4)} ${t.asset}</div>
+          ${usd ? `<div class="tx-usd">≈$${fmt(usd)}</div>` : ''}
+        </div>
+        ${shortHash ? `<a class="tx-hash" href="${explorerBase}${t.hash}" target="_blank" title="${t.hash}">${shortHash}</a>` : ''}
+      </div>`;
+  }).join('')}</div>`;
+}
+
+function exportHistoryCSV() {
+  const { txs, filterType, filterWallet } = historyState;
+  const hideSpam = document.getElementById('hide-spam-check')?.checked ?? true;
+  let filtered = txs;
+  if (filterType   !== 'all') filtered = filtered.filter(t => t.type === filterType);
+  if (filterWallet !== 'all') filtered = filtered.filter(t => t.walletAddr === filterWallet);
+  if (hideSpam) {
+    filtered = filtered.filter(t => {
+      const usd = tokenUsd(t.asset, t.amount, t.contractAddress);
+      return usd !== null && usd > 1.00;
+    });
+  }
+  if (!filtered.length) return toast('No transactions', 'err');
+  const rows = [['date','wallet','network','type','asset','amount','from','to','hash']];
+  for (const t of filtered) {
+    rows.push([new Date(t.date).toISOString(), t.wallet, t.network, t.type, t.asset, t.amount.toFixed(8), t.from, t.to, t.hash]);
+  }
+  const csv  = rows.map(r => r.map(csvEscape).join(',')).join('\n');
+  const blob = new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = `history_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  toast('CSV ready', 'ok');
+}
+
+/* ─── Stale data indicator ─── */
+function updateLastUpdateDisplay() {
+  const el = document.getElementById('last-update');
+  if (!el) return;
+  if (!state.lastUpdate) { el.textContent = '—'; el.className = 'topbar-meta'; return; }
+  const ageMs  = Date.now() - new Date(state.lastUpdate).getTime();
+  const ageMins = Math.floor(ageMs / 60000);
+  let text;
+  if (ageMins < 1)       text = 'updated just now';
+  else if (ageMins < 60) text = `updated ${ageMins}m ago`;
+  else                   text = `updated ${Math.floor(ageMins/60)}h ${ageMins%60}m ago`;
+  el.textContent = text;
+  el.className   = 'topbar-meta' + (ageMins >= 15 ? ' stale' : '');
+}
+setInterval(updateLastUpdateDisplay, 30000);
+
+/* ─── Auto-refresh ─── */
+let autoRefreshTimer = null;
+function setAutoRefresh(seconds) {
+  clearInterval(autoRefreshTimer);
+  autoRefreshTimer = null;
+  const s = Number(seconds);
+  if (s > 0) autoRefreshTimer = setInterval(refreshBalances, s * 1000);
+}
+
+/* ─── INIT ─── */
+renderSettings();
+if (state.lastBalances?.length) renderBalances(state.lastBalances);
+
+const hasTronWallets = state.wallets.some(w => w.network === 'tron');
+const canStart = state.wallets.length && state.keys.etherscan && (!hasTronWallets || state.keys.tronscan);
+if (canStart) {
+  setTimeout(refreshBalances, 600);
+} else if (state.wallets.length) {
+  const missing = [];
+  if (!state.keys.etherscan) missing.push('Etherscan API key');
+  if (hasTronWallets && !state.keys.tronscan) missing.push('TronGrid API key');
+  if (missing.length) logTo('dash-log', 'Missing: ' + missing.join(', ') + ' → Settings', 'warn');
+}
+</script>
+</body>
+</html>
