@@ -18,17 +18,18 @@
     "files": [
       "main.js",
       "preload.js",
-      "straxio_3.html",
-      "assets/**"
+      "straxio_3.html"
     ],
     "mac": {
       "category": "public.app-category.finance",
-      "icon": "assets/icon.icns",
-      "target": [{ "target": "dmg", "arch": ["arm64", "x64"] }]
+      "target": [
+        { "target": "dmg", "arch": ["arm64", "x64"] }
+      ]
     },
     "win": {
-      "icon": "assets/icon.ico",
-      "target": [{ "target": "nsis", "arch": ["x64"] }]
+      "target": [
+        { "target": "zip", "arch": ["x64"] }
+      ]
     }
   },
   "devDependencies": {

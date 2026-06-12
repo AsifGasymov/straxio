@@ -439,16 +439,20 @@ body.electron-mac .sidebar-logo {
 
 /* ─── HISTORY ─── */
 .history-filters {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 12px; padding: 12px 16px; border-radius: var(--r-md);
+  display: flex; flex-direction: column;
+  gap: 10px; padding: 12px 16px; border-radius: var(--r-md);
   background: var(--bg2); border: 1px solid var(--border);
-  margin-bottom: 14px; overflow-x: auto;
+  margin-bottom: 14px;
 }
-.history-filter-row { display: flex; align-items: center; flex-wrap: nowrap; gap: 12px; flex: 1; min-width: 0; }
+.history-filter-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.history-filter-row-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.history-filter-row-top .history-filter-row { flex: 1; }
 .filter-group { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 .filter-label { font-size: 11px; color: var(--text3); font-weight: 600; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.05em; }
-.filter-chips { display: flex; gap: 4px; flex-wrap: nowrap; }
+.filter-chips { display: flex; gap: 4px; flex-wrap: wrap; }
 .filter-group-sep { width: 1px; height: 18px; background: var(--border2); flex-shrink: 0; }
+.filter-row-wallet { display: flex; align-items: flex-start; gap: 8px; }
+.filter-row-wallet .filter-label { margin-top: 5px; }
 .filter-chip {
   padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border2);
   background: var(--bg3); color: var(--text2); cursor: pointer;
@@ -673,42 +677,45 @@ body.electron-mac .sidebar-logo {
       <!-- History view -->
       <div id="view-history" style="display:none">
         <div class="history-filters">
-          <div class="history-filter-row">
-            <div class="filter-group">
-              <span class="filter-label">Type:</span>
-              <div class="filter-chips">
-                <button class="filter-chip active" data-type="all" onclick="setHistoryFilter(this,'type')">All</button>
-                <button class="filter-chip" data-type="send" onclick="setHistoryFilter(this,'type')">↑ Send</button>
-                <button class="filter-chip" data-type="receive" onclick="setHistoryFilter(this,'type')">↓ Receive</button>
+          <!-- Row 1: Type, Period, controls -->
+          <div class="history-filter-row-top">
+            <div class="history-filter-row">
+              <div class="filter-group">
+                <span class="filter-label">Type:</span>
+                <div class="filter-chips">
+                  <button class="filter-chip active" data-type="all" onclick="setHistoryFilter(this,'type')">All</button>
+                  <button class="filter-chip" data-type="send" onclick="setHistoryFilter(this,'type')">↑ Send</button>
+                  <button class="filter-chip" data-type="receive" onclick="setHistoryFilter(this,'type')">↓ Receive</button>
+                </div>
+              </div>
+              <div class="filter-group-sep"></div>
+              <div class="filter-group">
+                <span class="filter-label">Period:</span>
+                <div class="filter-chips">
+                  <button class="filter-chip active" data-period="30" onclick="setHistoryFilter(this,'period')">30d</button>
+                  <button class="filter-chip" data-period="7" onclick="setHistoryFilter(this,'period')">7d</button>
+                  <button class="filter-chip" data-period="90" onclick="setHistoryFilter(this,'period')">90d</button>
+                </div>
               </div>
             </div>
-            <div class="filter-group-sep"></div>
-            <div class="filter-group">
-              <span class="filter-label">Wallet:</span>
-              <div class="filter-chips" id="history-wallet-chips">
-                <button class="filter-chip active" data-wallet="all" onclick="setHistoryFilter(this,'wallet')">All</button>
-              </div>
-            </div>
-            <div class="filter-group-sep"></div>
-            <div class="filter-group">
-              <span class="filter-label">Period:</span>
-              <div class="filter-chips">
-                <button class="filter-chip active" data-period="30" onclick="setHistoryFilter(this,'period')">30d</button>
-                <button class="filter-chip" data-period="7" onclick="setHistoryFilter(this,'period')">7d</button>
-                <button class="filter-chip" data-period="90" onclick="setHistoryFilter(this,'period')">90d</button>
-              </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+              <label class="spam-toggle" title="Hide spam transactions (value ≤ $1)">
+                <input type="checkbox" id="hide-spam-check" checked onchange="updateSpamToggle()">
+                <span class="spam-toggle-track">
+                  <span class="spam-toggle-thumb"></span>
+                </span>
+                <span class="spam-toggle-label">Hide Spam</span>
+              </label>
+              <button class="btn btn-ghost btn-sm" onclick="loadHistory()" id="history-load-btn">↻ Load</button>
+              <button class="btn btn-sm" onclick="exportHistoryCSV()" id="history-export-btn" style="display:none">↓ CSV</button>
             </div>
           </div>
-          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-            <label class="spam-toggle" title="Hide spam transactions (value ≤ $1)">
-              <input type="checkbox" id="hide-spam-check" checked onchange="updateSpamToggle()">
-              <span class="spam-toggle-track">
-                <span class="spam-toggle-thumb"></span>
-              </span>
-              <span class="spam-toggle-label">Hide Spam</span>
-            </label>
-            <button class="btn btn-ghost btn-sm" onclick="loadHistory()" id="history-load-btn">↻ Load</button>
-            <button class="btn btn-sm" onclick="exportHistoryCSV()" id="history-export-btn" style="display:none">↓ CSV</button>
+          <!-- Row 2: Wallet chips (wrap freely) -->
+          <div class="filter-row-wallet">
+            <span class="filter-label">Wallet:</span>
+            <div class="filter-chips" id="history-wallet-chips">
+              <button class="filter-chip active" data-wallet="all" onclick="setHistoryFilter(this,'wallet')">All</button>
+            </div>
           </div>
         </div>
         <div class="history-stats" id="history-stats" style="display:none">
@@ -1050,6 +1057,19 @@ async function fetchPrices() {
 }
 
 /* ─── API: Ethereum ─── */
+
+// Rate limiter: max ~2.4 calls/sec (420ms gap), safely under Etherscan's 3/sec limit
+const ethRateLimiter = (() => {
+  let lastCall = 0;
+  const MIN_INTERVAL = 420;
+  return async function throttle(fn) {
+    const wait = Math.max(0, MIN_INTERVAL - (Date.now() - lastCall));
+    if (wait > 0) await sleep(wait);
+    lastCall = Date.now();
+    return fn();
+  };
+})();
+
 async function ethGetBalance(address) {
   const key = state.keys.etherscan;
   if (!key) throw new Error('Etherscan API key not set');
@@ -1058,6 +1078,19 @@ async function ethGetBalance(address) {
   const j = await r.json();
   if (typeof j.result === 'string' && !isNaN(j.result)) return Number(j.result) / 1e18;
   throw new Error(`Etherscan balance: status=${j.status} msg=${j.message} result=${j.result}`);
+}
+
+// Fetch native ETH balances for up to 20 addresses in a single API call
+async function ethGetBalanceBatch(addresses) {
+  const key = state.keys.etherscan;
+  if (!key) throw new Error('Etherscan API key not set');
+  const url = `${ETHERSCAN_V2_BASE}?chainid=${ETH_CHAIN_ID}&module=account&action=balancemulti&address=${addresses.join(',')}&tag=latest&apikey=${key}`;
+  const r = await fetch(url);
+  const j = await r.json();
+  if (!Array.isArray(j.result)) throw new Error(`Etherscan balancemulti: status=${j.status} msg=${j.message}`);
+  const map = {};
+  for (const item of j.result) map[item.account.toLowerCase()] = Number(item.balance) / 1e18;
+  return map;
 }
 async function ethGetTokenBalance(address, contract, decimals) {
   const key = state.keys.etherscan;
@@ -1214,15 +1247,29 @@ async function refreshBalances() {
     logTo('dash-log', 'Prices unavailable — USD values will be 0', 'warn');
   }
 
+  // Batch-fetch all ETH native balances in a single API call (up to 20 addresses)
+  const ethWallets = state.wallets.filter(w => w.network === 'ethereum');
+  let ethBalanceMap = {};
+  if (ethWallets.length) {
+    try {
+      ethBalanceMap = await ethGetBalanceBatch(ethWallets.map(w => w.address));
+      logTo('dash-log', `Fetched ${ethWallets.length} ETH balances (1 batch call)`, 'ok');
+    } catch (e) {
+      logTo('dash-log', `ETH batch balance failed, will try individually: ${e.message}`, 'warn');
+    }
+  }
+
   const results = [];
   for (const w of state.wallets) {
     try {
       if (w.network === 'ethereum') {
-        const eth  = await fetchWithRetry(() => ethGetBalance(w.address), w.label);
-        await sleep(400);
-        const usdt = await fetchWithRetry(() => ethGetTokenBalance(w.address, ETH_TOKENS.USDT.contract, ETH_TOKENS.USDT.decimals), w.label + ' USDT');
-        await sleep(400);
-        const usdc = await fetchWithRetry(() => ethGetTokenBalance(w.address, ETH_TOKENS.USDC.contract, ETH_TOKENS.USDC.decimals), w.label + ' USDC');
+        // Use batch result; fall back to individual rate-limited call if missing
+        let eth = ethBalanceMap[w.address.toLowerCase()];
+        if (eth === undefined) {
+          eth = await ethRateLimiter(() => fetchWithRetry(() => ethGetBalance(w.address), w.label));
+        }
+        const usdt = await ethRateLimiter(() => fetchWithRetry(() => ethGetTokenBalance(w.address, ETH_TOKENS.USDT.contract, ETH_TOKENS.USDT.decimals), w.label + ' USDT'));
+        const usdc = await ethRateLimiter(() => fetchWithRetry(() => ethGetTokenBalance(w.address, ETH_TOKENS.USDC.contract, ETH_TOKENS.USDC.decimals), w.label + ' USDC'));
         const usd = eth * (prices.ETH || 0) + usdt + usdc;
         results.push({ ...w, balances: { ETH: eth, USDT: usdt, USDC: usdc }, usd });
         logTo('dash-log', `✓ ${w.label}: ${eth.toFixed(4)} ETH, ${usdt.toFixed(2)} USDT, ${usdc.toFixed(2)} USDC`, 'ok');
@@ -1236,7 +1283,6 @@ async function refreshBalances() {
       results.push({ ...w, balances: {}, usd: 0, error: e.message });
       logTo('dash-log', `✗ ${w.label}: ${e.message}`, 'err');
     }
-    await sleep(500);
   }
 
   checkAndNotify(state.lastBalances, results);
@@ -1373,10 +1419,14 @@ function shortenAddr(addr) {
   return addr.slice(0, 6) + '…' + addr.slice(-4);
 }
 
-/* ─── CSV escape helper ─── */
+/* ─── CSV escape helpers ─── */
 function csvEscape(v) {
   const s = String(v ?? '');
   return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s.replace(/"/g,'""')}"` : s;
+}
+function scsvEscape(v) {
+  const s = String(v ?? '');
+  return s.includes(';') || s.includes('"') || s.includes('\n') ? `"${s.replace(/"/g,'""')}"` : s;
 }
 
 /* ─── Tron address utils ─── */
@@ -1871,15 +1921,32 @@ function exportHistoryCSV() {
     });
   }
   if (!filtered.length) return toast('No transactions', 'err');
-  const rows = [['date','wallet','network','type','asset','amount','from','to','hash']];
-  for (const t of filtered) {
-    rows.push([new Date(t.date).toISOString(), t.wallet, t.network, t.type, t.asset, t.amount.toFixed(8), t.from, t.to, t.hash]);
+
+  const SEP = ';';
+  const row = cols => cols.map(scsvEscape).join(SEP);
+  const fmtDate = d => {
+    const dt = new Date(d);
+    return `${String(dt.getDate()).padStart(2,'0')}.${String(dt.getMonth()+1).padStart(2,'0')}.${dt.getFullYear()}`;
+  };
+  const fmtAmt = n => n.toFixed(2).replace('.', ',');
+
+  const lines = [];
+  lines.push(row(['#', 'Date', 'Details', 'Counterparty', 'Debit', 'Credit', 'Asset', 'Wallet', 'Tx Hash']));
+
+  for (let i = 0; i < filtered.length; i++) {
+    const t = filtered[i];
+    const details      = `${t.asset} ${t.type === 'send' ? 'transfer out' : 'transfer in'} · ${t.network}`;
+    const counterparty = t.type === 'send' ? t.to : t.from;
+    const debit  = t.type === 'send'    ? fmtAmt(t.amount) : '';
+    const credit = t.type === 'receive' ? fmtAmt(t.amount) : '';
+    lines.push(row([i + 1, fmtDate(t.date), details, counterparty, debit, credit, t.asset, t.wallet, t.hash]));
   }
-  const csv  = rows.map(r => r.map(csvEscape).join(',')).join('\n');
-  const blob = new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+
+  const csv  = lines.join('\n');
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
   const a    = document.createElement('a');
   a.href     = URL.createObjectURL(blob);
-  a.download = `history_${new Date().toISOString().slice(0,10)}.csv`;
+  a.download = `statement_${new Date().toISOString().slice(0, 10)}.csv`;
   a.click();
   toast('CSV ready', 'ok');
 }
