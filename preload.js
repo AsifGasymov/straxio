@@ -11,6 +11,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   // Open URLs in system browser (not inside the app)
   openExternal: (url) => ipcRenderer.invoke('open-external', url),
+  // System notification
+  notify: (title, body) => ipcRenderer.invoke('notify', { title, body }),
   // Platform info
   platform: process.platform,
 });

@@ -12,8 +12,8 @@ function createWindow() {
     height:    860,
     minWidth:  960,
     minHeight: 640,
-    titleBarStyle: 'hiddenInset',   // macOS: traffic-light buttons inset
-    vibrancy:  'sidebar',           // macOS: frosted glass effect on sidebar
+    titleBarStyle: 'hiddenInset',
+    trafficLightPosition: { x: 16, y: 20 },
     title: 'Straxio',
     webPreferences: {
       preload:          path.join(__dirname, 'preload.js'),
@@ -107,6 +107,14 @@ ipcMain.handle('config:path', () => CONFIG_PATH);
 
 ipcMain.handle('open-external', (_, url) => {
   shell.openExternal(url);
+});
+
+ipcMain.handle('notify', (_, { title, body }) => {
+  const { Notification } = require('electron');
+  if (Notification.isSupported()) {
+    const n = new Notification({ title, body, silent: false });
+    n.show();
+  }
 });
 
 // ─── App lifecycle ───────────────────────────────────────────────────────────

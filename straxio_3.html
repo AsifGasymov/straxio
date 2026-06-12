@@ -60,12 +60,19 @@ html, body {
 }
 .sidebar-logo {
   padding: 22px 20px 18px;
-  padding-top: max(22px, env(titlebar-area-height, 22px));
-  -webkit-app-region: drag; /* macOS: drag window from logo area */
+  -webkit-app-region: drag;
   display: flex; align-items: center; gap: 10px;
   border-bottom: 1px solid var(--border);
 }
 .sidebar-logo * { -webkit-app-region: no-drag; }
+
+/* macOS Electron: reserve space for traffic-light buttons */
+body.electron-mac .sidebar {
+  padding-top: 52px;
+}
+body.electron-mac .sidebar-logo {
+  padding-top: 0;
+}
 .logo-icon {
   width: 32px; height: 32px; border-radius: 8px;
   background: var(--dark);
@@ -1139,6 +1146,45 @@ async function tronGetTrc20Transactions(address, startTs, endTs) {
   });
 }
 
+/* ─── Balance change notifications ─── */
+const NOTIFY_THRESHOLD = 1; // minimum USD change to trigger notification
+
+function checkAndNotify(prevBalances, newResults) {
+  if (!prevBalances || !prevBalances.length) return; // skip first run
+  if (!IS_ELECTRON) return;
+
+  const changes = [];
+
+  for (const w of newResults) {
+    if (w.error) continue;
+    const prev = prevBalances.find(p => p.address === w.address);
+    if (!prev) continue;
+
+    const diff = (w.usd || 0) - (prev.usd || 0);
+    if (Math.abs(diff) < NOTIFY_THRESHOLD) continue;
+
+    const sign = diff > 0 ? '+' : '';
+    changes.push({ label: w.label, diff, usd: w.usd });
+
+    // Per-wallet notification
+    window.electronAPI.notify(
+      `${w.label}  ${sign}$${fmt(Math.abs(diff))}`,
+      `New balance: $${fmt(w.usd)}`
+    );
+  }
+
+  // If multiple wallets changed — also send a total summary
+  if (changes.length > 1) {
+    const totalDiff = changes.reduce((s, c) => s + c.diff, 0);
+    const sign = totalDiff > 0 ? '+' : '';
+    const totalNew = newResults.reduce((s, r) => s + (r.usd || 0), 0);
+    window.electronAPI.notify(
+      `Portfolio  ${sign}$${fmt(Math.abs(totalDiff))}`,
+      `Total balance: $${fmt(totalNew)}`
+    );
+  }
+}
+
 /* ─── Balances ─── */
 let isRefreshing = false;
 async function refreshBalances() {
@@ -1193,6 +1239,7 @@ async function refreshBalances() {
     await sleep(500);
   }
 
+  checkAndNotify(state.lastBalances, results);
   state.lastBalances = results;
   state.lastUpdate = new Date().toISOString();
   saveState();
@@ -1864,6 +1911,11 @@ function setAutoRefresh(seconds) {
 
 /* ─── INIT ─── */
 async function init() {
+  // Add platform class for OS-specific CSS
+  if (IS_ELECTRON && window.electronAPI.platform === 'darwin') {
+    document.body.classList.add('electron-mac');
+  }
+
   // In Electron, load config from file first, then proceed
   await initState();
 
