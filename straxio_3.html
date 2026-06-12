@@ -60,9 +60,12 @@ html, body {
 }
 .sidebar-logo {
   padding: 22px 20px 18px;
+  padding-top: max(22px, env(titlebar-area-height, 22px));
+  -webkit-app-region: drag; /* macOS: drag window from logo area */
   display: flex; align-items: center; gap: 10px;
   border-bottom: 1px solid var(--border);
 }
+.sidebar-logo * { -webkit-app-region: no-drag; }
 .logo-icon {
   width: 32px; height: 32px; border-radius: 8px;
   background: var(--dark);
@@ -818,18 +821,42 @@ const DEFAULT_STATE = {
   lastUpdate: null
 };
 
+// Detect Electron environment
+const IS_ELECTRON = typeof window !== 'undefined' && !!window.electronAPI;
+
 let state = loadState();
 let priceCache = { ETH: null, TRX: null, USDT: 1, USDC: 1, ts: 0 };
 
-/* ─── Storage ─── */
+/* ─── Storage — file-based in Electron, localStorage in browser ─── */
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return structuredClone(DEFAULT_STATE);
     return { ...structuredClone(DEFAULT_STATE), ...JSON.parse(raw) };
-  } catch { return structuredClone(DEFAULT_STATE); }
+  } catch (e) {
+    console.error('Failed to load state:', e);
+    return structuredClone(DEFAULT_STATE);
+  }
 }
-function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  // Also persist to file when running in Electron
+  if (IS_ELECTRON) window.electronAPI.config.write(state).catch(() => {});
+}
+
+// In Electron: load from file on first run, then keep in sync
+async function initState() {
+  if (!IS_ELECTRON) return;
+  try {
+    const fileState = await window.electronAPI.config.read();
+    if (fileState && typeof fileState === 'object') {
+      state = { ...structuredClone(DEFAULT_STATE), ...fileState };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+  } catch (e) {
+    console.error('Failed to read file config:', e);
+  }
+}
 
 /* ─── Navigation ─── */
 const pageTitles = { dashboard: 'Portfolio', settings: 'Settings' };
@@ -929,9 +956,12 @@ function renderWallets() {
       <span class="net-tag ${w.network === 'ethereum' ? 'eth' : 'tron'}">${w.network === 'ethereum' ? 'ETH' : 'TRX'}</span>
       <span class="wlabel">${escapeHtml(w.label)}</span>
       <span class="waddr">${shortenAddr(w.address)}</span>
-      <button class="del-btn" onclick="removeWallet('${w.address}')" title="Remove">×</button>
+      <button class="del-btn" data-addr="${escapeHtml(w.address)}" title="Remove">×</button>
     </div>
   `).join('');
+  el.querySelectorAll('.del-btn').forEach(btn => {
+    btn.addEventListener('click', () => removeWallet(btn.dataset.addr));
+  });
 }
 function escapeHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function exportConfig() {
@@ -945,6 +975,7 @@ function importConfig() {
   const input = document.createElement('input');
   input.type = 'file'; input.accept = '.json';
   input.onchange = e => {
+    if (!e.target.files || !e.target.files[0]) return;
     const fr = new FileReader();
     fr.onload = ev => {
       try {
@@ -1109,8 +1140,11 @@ async function tronGetTrc20Transactions(address, startTs, endTs) {
 }
 
 /* ─── Balances ─── */
+let isRefreshing = false;
 async function refreshBalances() {
+  if (isRefreshing) return;
   if (!state.wallets.length) { renderBalances([]); return; }
+  isRefreshing = true;
   clearLog('dash-log');
   logTo('dash-log', `Loading wallets...`);
 
@@ -1165,6 +1199,7 @@ async function refreshBalances() {
   renderBalances(results);
   if (currentView === 'tokens') renderAssetsByToken(results);
   btn.classList.remove('spinning');
+  isRefreshing = false;
 }
 
 function renderBalances(results) {
@@ -1828,22 +1863,28 @@ function setAutoRefresh(seconds) {
 }
 
 /* ─── INIT ─── */
-renderSettings();
-const walletCountEl = document.getElementById('wallet-count');
-if (walletCountEl) walletCountEl.textContent = state.wallets.length;
-if (state.lastBalances?.length) renderBalances(state.lastBalances);
-updateLastUpdateDisplay();
+async function init() {
+  // In Electron, load config from file first, then proceed
+  await initState();
 
-const hasTronWallets = state.wallets.some(w => w.network === 'tron');
-const canStart = state.wallets.length && state.keys.etherscan && (!hasTronWallets || state.keys.tronscan);
-if (canStart) {
-  setTimeout(refreshBalances, 600);
-} else if (state.wallets.length) {
-  const missing = [];
-  if (!state.keys.etherscan) missing.push('Etherscan API key');
-  if (hasTronWallets && !state.keys.tronscan) missing.push('TronGrid API key');
-  if (missing.length) logTo('dash-log', 'Missing: ' + missing.join(', ') + ' → Settings', 'warn');
+  renderSettings();
+  const walletCountEl = document.getElementById('wallet-count');
+  if (walletCountEl) walletCountEl.textContent = state.wallets.length;
+  if (state.lastBalances?.length) renderBalances(state.lastBalances);
+  updateLastUpdateDisplay();
+
+  const hasTronWallets = state.wallets.some(w => w.network === 'tron');
+  const canStart = state.wallets.length && state.keys.etherscan && (!hasTronWallets || state.keys.tronscan);
+  if (canStart) {
+    setTimeout(refreshBalances, 600);
+  } else if (state.wallets.length) {
+    const missing = [];
+    if (!state.keys.etherscan) missing.push('Etherscan API key');
+    if (hasTronWallets && !state.keys.tronscan) missing.push('TronGrid API key');
+    if (missing.length) logTo('dash-log', 'Missing: ' + missing.join(', ') + ' → Settings', 'warn');
+  }
 }
+init();
 </script>
 </body>
 </html>
