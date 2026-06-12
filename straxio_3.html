@@ -1196,13 +1196,13 @@ function checkAndNotify(prevBalances, newResults) {
     const diff = (w.usd || 0) - (prev.usd || 0);
     if (Math.abs(diff) < NOTIFY_THRESHOLD) continue;
 
-    const sign = diff > 0 ? '+' : '';
+    const sign = diff > 0 ? '+' : '−';
+    const direction = diff > 0 ? 'Received on' : 'Sent from';
     changes.push({ label: w.label, diff, usd: w.usd });
 
-    // Per-wallet notification
     window.electronAPI.notify(
-      `${w.label}  ${sign}$${fmt(Math.abs(diff))}`,
-      `New balance: $${fmt(w.usd)}`
+      `${sign}$${fmt(Math.abs(diff))}`,
+      `${direction} ${w.label} · Balance: $${fmt(w.usd)}`
     );
   }
 
