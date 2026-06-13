@@ -12,6 +12,7 @@
   "build": {
     "appId": "com.straxio.app",
     "productName": "Straxio",
+    "afterPack": "./afterPack.js",
     "directories": {
       "output": "dist"
     },
