@@ -37,6 +37,26 @@
   --r-sm:       8px;
   --r-md:       12px;
 }
+body.dark {
+  --bg:      #0f0f10;
+  --bg2:     #1c1c1e;
+  --bg3:     #242426;
+  --bg4:     #2d2d2f;
+  --border:  rgba(255,255,255,0.06);
+  --border2: rgba(255,255,255,0.11);
+  --text:    #f0f0f0;
+  --text2:   #9ca3af;
+  --text3:   #5a6578;
+}
+body.dark .nav-btn.active       { background: rgba(255,255,255,0.10); color: white; }
+body.dark .view-tab.active      { background: rgba(255,255,255,0.10); color: white; }
+body.dark .filter-chip.active   { background: rgba(255,255,255,0.12); color: white; border-color: rgba(255,255,255,0.18); }
+body.dark .btn:not(.btn-ghost):not(.btn-danger) { background: rgba(255,255,255,0.10); color: #f0f0f0; border: 1px solid rgba(255,255,255,0.13); }
+body.dark .btn-refresh          { background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.13); }
+body.dark .spam-toggle-track    { background: #3a3a3c; }
+body.dark .date-input           { color-scheme: dark; }
+body.dark .wallet-avatar .net-badge { border-color: var(--bg2); }
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body {
   background: var(--bg);
@@ -537,6 +557,16 @@ body.electron-mac .sidebar-logo {
 .toast.err  { background: var(--red-bg);   color: var(--red);   border: 1px solid rgba(248,113,113,0.3); }
 .toast.info { background: var(--bg2);      color: var(--text);  border: 1px solid var(--border2); }
 
+/* ─── DARK MODE TOGGLE ─── */
+.btn-icon {
+  width: 34px; height: 34px; border-radius: var(--r-sm);
+  background: var(--bg3); border: 1px solid var(--border2);
+  cursor: pointer; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s; color: var(--text2); flex-shrink: 0;
+}
+.btn-icon:hover { background: var(--bg4); color: var(--text); }
+
 /* ─── SCROLLBAR ─── */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -581,6 +611,7 @@ body.electron-mac .sidebar-logo {
     <div class="topbar">
       <div class="topbar-title" id="page-title">Portfolio</div>
       <div class="topbar-meta" id="last-update">—</div>
+      <button class="btn-icon" id="dark-toggle" onclick="toggleDarkMode()" title="Toggle theme">☾</button>
       <div class="auto-refresh-wrap">
         <select id="auto-refresh-select" onchange="setAutoRefresh(this.value)" title="Auto-refresh interval">
           <option value="0">Manual</option>
@@ -731,6 +762,11 @@ body.electron-mac .sidebar-logo {
             <div class="filter-chips" id="history-wallet-chips">
               <button class="filter-chip active" data-wallet="all" onclick="setHistoryFilter(this,'wallet')">All</button>
             </div>
+          </div>
+          <!-- Row 3: Asset chips -->
+          <div class="filter-row-wallet" id="history-asset-row" style="display:none">
+            <span class="filter-label">Asset:</span>
+            <div class="filter-chips" id="history-asset-chips"></div>
           </div>
         </div>
         <div class="history-stats" id="history-stats" style="display:none">
@@ -1660,6 +1696,7 @@ let historyState = {
   txs: [],
   filterType:   'all',
   filterWallet: 'all',
+  filterAsset:  'all',
   filterPeriod: 30,
   customFrom: null,
   customTo: null
@@ -1677,6 +1714,7 @@ function setHistoryFilter(btn, kind) {
   btn.classList.add('active');
   if (kind === 'type')   { historyState.filterType   = btn.dataset.type;   renderHistoryList(); }
   if (kind === 'wallet') { historyState.filterWallet = btn.dataset.wallet;  renderHistoryList(); }
+  if (kind === 'asset')  { historyState.filterAsset  = btn.dataset.asset;   renderHistoryList(); }
   if (kind === 'period') {
     const val = btn.dataset.period;
     const customEl = document.getElementById('custom-date-range');
@@ -1700,6 +1738,31 @@ function applyCustomRange() {
   historyState.customFrom = from;
   historyState.customTo   = to;
   loadHistory();
+}
+
+function renderHistoryAssetChips() {
+  const el  = document.getElementById('history-asset-chips');
+  const row = document.getElementById('history-asset-row');
+  if (!el || !row) return;
+  const assets = [...new Set(historyState.txs.map(t => t.asset).filter(Boolean))].sort();
+  if (!assets.length) { row.style.display = 'none'; return; }
+  row.style.display = 'flex';
+  el.innerHTML =
+    `<button class="filter-chip ${historyState.filterAsset==='all'?'active':''}" data-asset="all" onclick="setHistoryFilter(this,'asset')">All</button>` +
+    assets.map(a => `<button class="filter-chip ${historyState.filterAsset===a?'active':''}" data-asset="${escapeHtml(a)}" onclick="setHistoryFilter(this,'asset')">${escapeHtml(a)}</button>`).join('');
+}
+
+function toggleDarkMode() {
+  const isDark = document.body.classList.toggle('dark');
+  localStorage.setItem('darkMode', isDark ? '1' : '0');
+  document.getElementById('dark-toggle').textContent = isDark ? '☀' : '☾';
+}
+function initDarkMode() {
+  if (localStorage.getItem('darkMode') === '1') {
+    document.body.classList.add('dark');
+    const btn = document.getElementById('dark-toggle');
+    if (btn) btn.textContent = '☀';
+  }
 }
 
 let tokenPriceCache = {};
@@ -1865,23 +1928,26 @@ async function loadHistory() {
   }
 
   historyState.txs = allTxs.sort((a, b) => b.date - a.date);
+  historyState.filterAsset = 'all';
   const uniqueSymbols = [...new Set(allTxs.map(t => (t.asset||'').toUpperCase()))];
   logTo('history-log', `Fetching prices for ${uniqueSymbols.length} tokens...`);
   await fetchTokenPrices(uniqueSymbols);
   logTo('history-log', `Prices loaded. Rendering...`, 'ok');
 
+  renderHistoryAssetChips();
   renderHistoryList();
   btn.disabled = false; btn.textContent = '↻ Load';
   document.getElementById('history-export-btn').style.display = allTxs.length ? '' : 'none';
 }
 
 function renderHistoryList() {
-  const { txs, filterType, filterWallet } = historyState;
+  const { txs, filterType, filterWallet, filterAsset } = historyState;
   const hideSpam = document.getElementById('hide-spam-check')?.checked ?? true;
 
   let filtered = txs;
   if (filterType   !== 'all') filtered = filtered.filter(t => t.type === filterType);
   if (filterWallet !== 'all') filtered = filtered.filter(t => t.walletAddr === filterWallet);
+  if (filterAsset  !== 'all') filtered = filtered.filter(t => t.asset === filterAsset);
 
   let spamCount = 0;
   if (hideSpam) {
@@ -1954,11 +2020,12 @@ function renderHistoryList() {
 }
 
 function exportHistoryCSV() {
-  const { txs, filterType, filterWallet } = historyState;
+  const { txs, filterType, filterWallet, filterAsset } = historyState;
   const hideSpam = document.getElementById('hide-spam-check')?.checked ?? true;
   let filtered = txs;
   if (filterType   !== 'all') filtered = filtered.filter(t => t.type === filterType);
   if (filterWallet !== 'all') filtered = filtered.filter(t => t.walletAddr === filterWallet);
+  if (filterAsset  !== 'all') filtered = filtered.filter(t => t.asset === filterAsset);
   if (hideSpam) {
     filtered = filtered.filter(t => {
       const usd = tokenUsd(t.asset, t.amount, t.contractAddress);
@@ -2035,6 +2102,7 @@ async function init() {
 
   // In Electron, load config from file first, then proceed
   await initState();
+  initDarkMode();
 
   renderSettings();
   const walletCountEl = document.getElementById('wallet-count');
