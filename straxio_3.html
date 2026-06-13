@@ -2030,7 +2030,14 @@ function renderHistoryList() {
   const { txs, filterType, filterWallet, filterAsset, searchQuery } = historyState;
   const hideSpam = document.getElementById('hide-spam-check')?.checked ?? true;
 
-  let filtered = txs;
+  // Always strip scam assets: fake stablecoins (wrong contract) and unknown tokens
+  let filtered = txs.filter(t => {
+    if (isFakeStable(t.asset, t.contractAddress)) return false;
+    const usd = tokenUsd(t.asset, t.amount, t.contractAddress);
+    if (usd === null) return false;
+    return true;
+  });
+
   if (filterType   !== 'all') filtered = filtered.filter(t => t.type === filterType);
   if (filterWallet !== 'all') filtered = filtered.filter(t => t.walletAddr === filterWallet);
   if (filterAsset  !== 'all') filtered = filtered.filter(t => t.asset === filterAsset);
@@ -2049,7 +2056,6 @@ function renderHistoryList() {
     const before = filtered.length;
     filtered = filtered.filter(t => {
       const usd = tokenUsd(t.asset, t.amount, t.contractAddress);
-      if (usd === null) return false;
       return usd > 1.00;
     });
     spamCount = before - filtered.length;
@@ -2091,7 +2097,6 @@ function renderHistoryList() {
     const cls      = isSend ? 'send' : 'receive';
     const amtCls   = isSend ? 'out' : 'in';
     const sign     = isSend ? '-' : '+';
-    const isFake   = isFakeStable(t.asset, t.contractAddress);
     const usd      = tokenUsd(t.asset, t.amount, t.contractAddress) ?? 0;
     const d        = new Date(t.date);
     const dateStr  = d.toLocaleDateString('en-GB') + ' ' + d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
@@ -2102,7 +2107,7 @@ function renderHistoryList() {
       <div class="tx-row">
         <div class="tx-icon ${cls}">${icon}</div>
         <div class="tx-info">
-          <div class="tx-type">${label} · <span class="tx-wallet">${escapeHtml(t.wallet)}</span>${isFake ? '<span class="tx-fake-badge">⚠ FAKE</span>' : ''}</div>
+          <div class="tx-type">${label} · <span class="tx-wallet">${escapeHtml(t.wallet)}</span></div>
           <div class="tx-meta">${dateStr} · ${counterpart ? shortenAddr(counterpart) : ''}</div>
         </div>
         <div class="tx-amount">
@@ -2117,14 +2122,17 @@ function renderHistoryList() {
 function exportHistoryCSV() {
   const { txs, filterType, filterWallet, filterAsset } = historyState;
   const hideSpam = document.getElementById('hide-spam-check')?.checked ?? true;
-  let filtered = txs;
+  let filtered = txs.filter(t => {
+    if (isFakeStable(t.asset, t.contractAddress)) return false;
+    return tokenUsd(t.asset, t.amount, t.contractAddress) !== null;
+  });
   if (filterType   !== 'all') filtered = filtered.filter(t => t.type === filterType);
   if (filterWallet !== 'all') filtered = filtered.filter(t => t.walletAddr === filterWallet);
   if (filterAsset  !== 'all') filtered = filtered.filter(t => t.asset === filterAsset);
   if (hideSpam) {
     filtered = filtered.filter(t => {
       const usd = tokenUsd(t.asset, t.amount, t.contractAddress);
-      return usd !== null && usd > 1.00;
+      return usd > 1.00;
     });
   }
   if (!filtered.length) return toast('No transactions', 'err');
