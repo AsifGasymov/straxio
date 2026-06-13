@@ -557,6 +557,29 @@ body.electron-mac .sidebar-logo {
 .toast.err  { background: var(--red-bg);   color: var(--red);   border: 1px solid rgba(248,113,113,0.3); }
 .toast.info { background: var(--bg2);      color: var(--text);  border: 1px solid var(--border2); }
 
+/* ─── BALANCE BLUR ─── */
+body.hide-balances #eth-usd,
+body.hide-balances #tron-usd,
+body.hide-balances .hero-card-value,
+body.hide-balances .hero-split-val,
+body.hide-balances .wallet-usd,
+body.hide-balances .wallet-usd-sub,
+body.hide-balances .token-bal,
+body.hide-balances .token-usd,
+body.hide-balances #hstat-out,
+body.hide-balances #hstat-in,
+body.hide-balances #hstat-net,
+body.hide-balances .tx-amount-val,
+body.hide-balances .tx-usd,
+body.hide-balances .asset-row-usd,
+body.hide-balances .asset-row-bal,
+body.hide-balances .detail-wallet-bal,
+body.hide-balances .detail-wallet-usd {
+  filter: blur(7px);
+  user-select: none;
+  transition: filter 0.2s;
+}
+
 /* ─── DARK MODE TOGGLE ─── */
 .btn-icon {
   width: 34px; height: 34px; border-radius: var(--r-sm);
@@ -611,6 +634,7 @@ body.electron-mac .sidebar-logo {
     <div class="topbar">
       <div class="topbar-title" id="page-title">Portfolio</div>
       <div class="topbar-meta" id="last-update">—</div>
+      <button class="btn-icon" id="balance-toggle" onclick="toggleBalanceHide()" title="Hide balances">⊙</button>
       <button class="btn-icon" id="dark-toggle" onclick="toggleDarkMode()" title="Toggle theme">☾</button>
       <div class="auto-refresh-wrap">
         <select id="auto-refresh-select" onchange="setAutoRefresh(this.value)" title="Auto-refresh interval">
@@ -1752,6 +1776,19 @@ function renderHistoryAssetChips() {
     assets.map(a => `<button class="filter-chip ${historyState.filterAsset===a?'active':''}" data-asset="${escapeHtml(a)}" onclick="setHistoryFilter(this,'asset')">${escapeHtml(a)}</button>`).join('');
 }
 
+function toggleBalanceHide() {
+  const hidden = document.body.classList.toggle('hide-balances');
+  localStorage.setItem('hideBalances', hidden ? '1' : '0');
+  document.getElementById('balance-toggle').textContent = hidden ? '⊘' : '⊙';
+}
+function initBalanceHide() {
+  if (localStorage.getItem('hideBalances') === '1') {
+    document.body.classList.add('hide-balances');
+    const btn = document.getElementById('balance-toggle');
+    if (btn) btn.textContent = '⊘';
+  }
+}
+
 function toggleDarkMode() {
   const isDark = document.body.classList.toggle('dark');
   localStorage.setItem('darkMode', isDark ? '1' : '0');
@@ -2103,6 +2140,7 @@ async function init() {
   // In Electron, load config from file first, then proceed
   await initState();
   initDarkMode();
+  initBalanceHide();
 
   renderSettings();
   const walletCountEl = document.getElementById('wallet-count');
