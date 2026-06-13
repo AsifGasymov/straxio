@@ -520,6 +520,26 @@ body.electron-mac .sidebar-logo {
 .tx-hash { font-size: 10px; color: var(--text3); font-family: var(--mono); text-decoration: none; }
 .tx-hash:hover { color: var(--text); }
 
+.history-search-wrap {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: var(--r-sm); padding: 0 10px; transition: border-color 0.15s;
+}
+.history-search-wrap:focus-within { border-color: var(--dark); }
+.history-search {
+  flex: 1; border: none; background: none; outline: none;
+  font-family: var(--mono); font-size: 12.5px; color: var(--text);
+  padding: 7px 0;
+}
+.history-search::placeholder { color: var(--text3); }
+.history-search-icon { color: var(--text3); font-size: 13px; flex-shrink: 0; }
+.history-search-clear {
+  background: none; border: none; cursor: pointer;
+  color: var(--text3); font-size: 14px; padding: 0; line-height: 1;
+  display: none;
+}
+.history-search-clear:hover { color: var(--text); }
+
 .spam-toggle { display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none; }
 .spam-toggle input { display: none; }
 .spam-toggle-track {
@@ -791,6 +811,14 @@ body.hide-balances .detail-wallet-usd {
           <div class="filter-row-wallet" id="history-asset-row" style="display:none">
             <span class="filter-label">Asset:</span>
             <div class="filter-chips" id="history-asset-chips"></div>
+          </div>
+          <!-- Row 4: Search -->
+          <div class="history-search-wrap">
+            <span class="history-search-icon">⌕</span>
+            <input class="history-search" id="history-search" type="text"
+              placeholder="Search by address, hash, wallet…"
+              oninput="onHistorySearch(this)">
+            <button class="history-search-clear" id="history-search-clear" onclick="clearHistorySearch()">✕</button>
           </div>
         </div>
         <div class="history-stats" id="history-stats" style="display:none">
@@ -1723,7 +1751,8 @@ let historyState = {
   filterAsset:  'all',
   filterPeriod: 30,
   customFrom: null,
-  customTo: null
+  customTo: null,
+  searchQuery: ''
 };
 
 function renderHistoryWalletChips() {
@@ -1762,6 +1791,21 @@ function applyCustomRange() {
   historyState.customFrom = from;
   historyState.customTo   = to;
   loadHistory();
+}
+
+function onHistorySearch(input) {
+  historyState.searchQuery = input.value.trim();
+  const clearBtn = document.getElementById('history-search-clear');
+  if (clearBtn) clearBtn.style.display = historyState.searchQuery ? '' : 'none';
+  renderHistoryList();
+}
+function clearHistorySearch() {
+  historyState.searchQuery = '';
+  const input = document.getElementById('history-search');
+  if (input) input.value = '';
+  const clearBtn = document.getElementById('history-search-clear');
+  if (clearBtn) clearBtn.style.display = 'none';
+  renderHistoryList();
 }
 
 function renderHistoryAssetChips() {
@@ -1965,7 +2009,12 @@ async function loadHistory() {
   }
 
   historyState.txs = allTxs.sort((a, b) => b.date - a.date);
-  historyState.filterAsset = 'all';
+  historyState.filterAsset  = 'all';
+  historyState.searchQuery  = '';
+  const searchInput = document.getElementById('history-search');
+  if (searchInput) searchInput.value = '';
+  const searchClear = document.getElementById('history-search-clear');
+  if (searchClear) searchClear.style.display = 'none';
   const uniqueSymbols = [...new Set(allTxs.map(t => (t.asset||'').toUpperCase()))];
   logTo('history-log', `Fetching prices for ${uniqueSymbols.length} tokens...`);
   await fetchTokenPrices(uniqueSymbols);
@@ -1978,13 +2027,22 @@ async function loadHistory() {
 }
 
 function renderHistoryList() {
-  const { txs, filterType, filterWallet, filterAsset } = historyState;
+  const { txs, filterType, filterWallet, filterAsset, searchQuery } = historyState;
   const hideSpam = document.getElementById('hide-spam-check')?.checked ?? true;
 
   let filtered = txs;
   if (filterType   !== 'all') filtered = filtered.filter(t => t.type === filterType);
   if (filterWallet !== 'all') filtered = filtered.filter(t => t.walletAddr === filterWallet);
   if (filterAsset  !== 'all') filtered = filtered.filter(t => t.asset === filterAsset);
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    filtered = filtered.filter(t =>
+      (t.from  || '').toLowerCase().includes(q) ||
+      (t.to    || '').toLowerCase().includes(q) ||
+      (t.hash  || '').toLowerCase().includes(q) ||
+      (t.wallet|| '').toLowerCase().includes(q)
+    );
+  }
 
   let spamCount = 0;
   if (hideSpam) {
