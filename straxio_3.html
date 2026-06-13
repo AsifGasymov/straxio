@@ -460,6 +460,13 @@ body.electron-mac .sidebar-logo {
 }
 .filter-chip:hover { background: var(--bg4); color: var(--text); }
 .filter-chip.active { background: var(--dark); color: white; border-color: var(--dark); }
+.date-input {
+  background: var(--bg3); border: 1px solid var(--border2); border-radius: 20px;
+  color: var(--text2); font-family: var(--sans); font-size: 12px; font-weight: 500;
+  padding: 4px 10px; cursor: pointer; outline: none; transition: border-color 0.15s;
+  color-scheme: light;
+}
+.date-input:focus { border-color: var(--dark); color: var(--text); }
 
 .history-stats { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
 .hstat { flex: 1; min-width: 100px; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 14px 18px; }
@@ -695,6 +702,12 @@ body.electron-mac .sidebar-logo {
                   <button class="filter-chip active" data-period="30" onclick="setHistoryFilter(this,'period')">30d</button>
                   <button class="filter-chip" data-period="7" onclick="setHistoryFilter(this,'period')">7d</button>
                   <button class="filter-chip" data-period="90" onclick="setHistoryFilter(this,'period')">90d</button>
+                  <button class="filter-chip" data-period="custom" onclick="setHistoryFilter(this,'period')">Custom</button>
+                </div>
+                <div id="custom-date-range" style="display:none;align-items:center;gap:6px;margin-left:4px">
+                  <input type="date" id="custom-date-from" class="date-input" onchange="applyCustomRange()">
+                  <span style="color:var(--text3);font-size:12px">—</span>
+                  <input type="date" id="custom-date-to" class="date-input" onchange="applyCustomRange()">
                 </div>
               </div>
             </div>
@@ -1645,7 +1658,9 @@ let historyState = {
   txs: [],
   filterType:   'all',
   filterWallet: 'all',
-  filterPeriod: 30
+  filterPeriod: 30,
+  customFrom: null,
+  customTo: null
 };
 
 function renderHistoryWalletChips() {
@@ -1661,10 +1676,28 @@ function setHistoryFilter(btn, kind) {
   if (kind === 'type')   { historyState.filterType   = btn.dataset.type;   renderHistoryList(); }
   if (kind === 'wallet') { historyState.filterWallet = btn.dataset.wallet;  renderHistoryList(); }
   if (kind === 'period') {
-    historyState.filterPeriod = Number(btn.dataset.period);
-    if (historyState.txs.length) loadHistory();
-    else renderHistoryList();
+    const val = btn.dataset.period;
+    const customEl = document.getElementById('custom-date-range');
+    if (val === 'custom') {
+      historyState.filterPeriod = 'custom';
+      customEl.style.display = 'flex';
+    } else {
+      historyState.filterPeriod = Number(val);
+      customEl.style.display = 'none';
+      if (historyState.txs.length) loadHistory();
+      else renderHistoryList();
+    }
   }
+}
+
+function applyCustomRange() {
+  const from = document.getElementById('custom-date-from').value;
+  const to   = document.getElementById('custom-date-to').value;
+  if (!from || !to) return;
+  if (from > to) return toast('Start date must be before end date', 'err');
+  historyState.customFrom = from;
+  historyState.customTo   = to;
+  loadHistory();
 }
 
 let tokenPriceCache = {};
@@ -1749,9 +1782,19 @@ async function loadHistory() {
   logPanel.style.display = '';
   clearLog('history-log');
 
-  const days    = historyState.filterPeriod;
-  const endTs   = Date.now();
-  const startTs = endTs - days * 86400000;
+  let startTs, endTs;
+  if (historyState.filterPeriod === 'custom') {
+    if (!historyState.customFrom || !historyState.customTo) {
+      btn.disabled = false; btn.textContent = '↻ Load';
+      return toast('Select a date range', 'err');
+    }
+    startTs = new Date(historyState.customFrom).getTime();
+    endTs   = new Date(historyState.customTo).getTime() + 86399999;
+  } else {
+    const days = historyState.filterPeriod;
+    endTs   = Date.now();
+    startTs = endTs - days * 86400000;
+  }
   const allTxs  = [];
 
   const walletsToLoad = historyState.filterWallet === 'all'
