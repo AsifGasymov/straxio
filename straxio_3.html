@@ -1973,16 +1973,21 @@ function exportHistoryCSV() {
   };
   const fmtAmt = n => n.toFixed(2).replace('.', ',');
 
+  const USD_ASSETS = new Set(['USDT', 'USDC', 'USDC_E']);
+  const displayAsset = a => USD_ASSETS.has((a || '').toUpperCase()) ? 'USD' : a;
+
   const lines = [];
-  lines.push(row(['#', 'Date', 'Details', 'Counterparty', 'Debit', 'Credit', 'Asset', 'Wallet', 'Tx Hash']));
+  lines.push(row(['#', 'Date', 'Details', 'Counterparty', 'Debit', 'Credit', 'Asset', 'Wallet', 'Tx Hash', 'Descriptor']));
 
   for (let i = 0; i < filtered.length; i++) {
     const t = filtered[i];
-    const details      = `${t.asset} ${t.type === 'send' ? 'transfer out' : 'transfer in'} · ${t.network}`;
+    const asset        = displayAsset(t.asset);
+    const details      = `${asset} ${t.type === 'send' ? 'transfer out' : 'transfer in'} · ${t.network}`;
     const counterparty = t.type === 'send' ? t.to : t.from;
-    const debit  = t.type === 'send'    ? fmtAmt(t.amount) : '';
-    const credit = t.type === 'receive' ? fmtAmt(t.amount) : '';
-    lines.push(row([i + 1, fmtDate(t.date), details, counterparty, debit, credit, t.asset, t.wallet, t.hash]));
+    const debit        = t.type === 'send'    ? fmtAmt(t.amount) : '';
+    const credit       = t.type === 'receive' ? fmtAmt(t.amount) : '';
+    const descriptor   = `${t.from} → ${t.to}, ${fmtAmt(t.amount)} ${t.asset}, ${t.hash}`;
+    lines.push(row([i + 1, fmtDate(t.date), details, counterparty, debit, credit, asset, t.wallet, t.hash, descriptor]));
   }
 
   const csv  = lines.join('\n');
