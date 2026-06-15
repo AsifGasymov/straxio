@@ -1,6 +1,6 @@
 {
   "name": "straxio",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Ethereum & Tron wallet monitor",
   "main": "main.js",
   "scripts": {
