@@ -2144,6 +2144,25 @@ function exportHistoryCSV() {
     return `${String(dt.getDate()).padStart(2,'0')}.${String(dt.getMonth()+1).padStart(2,'0')}.${dt.getFullYear()}`;
   };
   const fmtAmt = n => n.toFixed(2);
+  const slugify = s => s.replace(/[^\wЀ-ӿ]+/g, '_').replace(/^_|_$/g, '');
+
+  // Wallet label for filename / TxID prefix
+  let walletSlug = 'all';
+  if (filterWallet !== 'all') {
+    const w = state.wallets.find(w => w.address === filterWallet);
+    if (w) walletSlug = slugify(w.label);
+  }
+
+  // Period for filename
+  let periodFrom, periodTo;
+  if (historyState.filterPeriod === 'custom' && historyState.customFrom && historyState.customTo) {
+    periodFrom = historyState.customFrom;
+    periodTo   = historyState.customTo;
+  } else {
+    const days = Number(historyState.filterPeriod);
+    periodTo   = new Date().toISOString().slice(0, 10);
+    periodFrom = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+  }
 
   const USD_ASSETS = new Set(['USDT', 'USDC', 'USDC_E']);
   const displayAsset = a => USD_ASSETS.has((a || '').toUpperCase()) ? 'USD' : a;
@@ -2158,15 +2177,16 @@ function exportHistoryCSV() {
     const counterparty = t.type === 'send' ? t.to : t.from;
     const debit        = t.type === 'send'    ? fmtAmt(t.amount) : '';
     const credit       = t.type === 'receive' ? fmtAmt(t.amount) : '';
+    const txId         = filterWallet !== 'all' && t.hash ? `${walletSlug}_${t.hash}` : (t.hash || '');
     const descriptor   = `${t.from} → ${t.to}, ${fmtAmt(t.amount)} ${t.asset}, ${t.hash}`;
-    lines.push(row([i + 1, fmtDate(t.date), details, counterparty, debit, credit, asset, t.wallet, t.hash, descriptor]));
+    lines.push(row([i + 1, fmtDate(t.date), details, counterparty, debit, credit, asset, t.wallet, txId, descriptor]));
   }
 
   const csv  = lines.join('\n');
   const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
   const a    = document.createElement('a');
   a.href     = URL.createObjectURL(blob);
-  a.download = `statement_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.download = `statement_${walletSlug}_${periodFrom}_${periodTo}.csv`;
   a.click();
   toast('CSV ready', 'ok');
 }
